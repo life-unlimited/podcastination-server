@@ -1,6 +1,7 @@
 package config
 
 type PodcastinationConfig struct {
-	PullDirectory    string `json:"pull_directory"`
-	PodcastDirectory string `json:"podcast_directory"`
+	PostgresDatasource string `json:"postgres_datasource"`
+	PullDirectory      string `json:"pull_directory"`
+	PodcastDirectory   string `json:"podcast_directory"`
 }

@@ -1,30 +1,24 @@
 package podcasts
 
 type Podcast struct {
+	Id            int
 	Title         string
 	Subtitle      string
 	Language      Language
-	Owner         Owner
+	OwnerId       int
 	Description   string
 	Keywords      []string
 	Link          string
 	ImageLocation string
-	Type          Type
-	Seasons       []Season
+	PodcastType   PodcastType
 }
 
-type Owner struct {
-	Name      string
-	Email     string
-	Copyright string
-}
-
-type Type string
+type PodcastType string
 
 const (
-	TypeSermon  Type = "sermon"
-	TypeService Type = "service"
-	TypeEvent   Type = "event"
+	TypeSermon  PodcastType = "sermon"
+	TypeService PodcastType = "service"
+	TypeEvent   PodcastType = "event"
 )
 
 type Language string
