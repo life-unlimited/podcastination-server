@@ -8,7 +8,7 @@ type Episode struct {
 	Date        time.Time
 	Author      string
 	Description string
-	Season      int
-	Episode     int
+	Season      int // TODO: Separate structure
+	Episode     int // TODO: To season
 	MP3Location string
 }

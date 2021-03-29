@@ -10,13 +10,13 @@ type Podcast struct {
 	Link          string
 	ImageLocation string
 	Type          Type
-	Episodes      []Episode
+	Seasons       []Season
 }
 
 type Owner struct {
-	copyright string
-	creator   string
-	email     string
+	Name      string
+	Email     string
+	Copyright string
 }
 
 type Type string
