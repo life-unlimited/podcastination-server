@@ -31,10 +31,12 @@ func (a *App) Boot() error {
 	return nil
 }
 
+// connectToDB connects to the database with postgres driver.
 func connectToDB(dataSourceName string) (*sql.DB, error) {
 	return sql.Open("postgres", dataSourceName)
 }
 
+// closeDB closes the database connection.
 func closeDB(db *sql.DB) {
 	if err := db.Close(); err != nil {
 		panic(fmt.Errorf("could not close db connection: %v", err))
