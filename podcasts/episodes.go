@@ -13,4 +13,5 @@ type Episode struct {
 	MP3Location   string
 	SeasonId      int
 	Num           int
+	YouTubeURL    string
 }
