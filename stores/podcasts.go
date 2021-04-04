@@ -11,7 +11,7 @@ type PodcastStore struct {
 	DB *sql.DB
 }
 
-const podcastSelect = "select id, title, subtitle, language, owner_id, description, keywords, link, image_location, type from podcasts"
+const podcastSelect = "select id, title, subtitle, language, owner_id, description, keywords, link, image_location, type, key from podcasts"
 
 // All retrieves all podcasts from the store.
 func (s *PodcastStore) All() ([]podcasts.Podcast, error) {
@@ -59,6 +59,7 @@ func parseRowsAsPodcasts(rows *sql.Rows) ([]podcasts.Podcast, error) {
 		link          string
 		imageLocation string
 		podcastType   podcasts.PodcastType
+		key           string
 	)
 
 	var pcs []podcasts.Podcast
@@ -78,6 +79,7 @@ func parseRowsAsPodcasts(rows *sql.Rows) ([]podcasts.Podcast, error) {
 			Link:          link,
 			ImageLocation: imageLocation,
 			PodcastType:   podcastType,
+			Key:           key,
 		})
 	}
 	return pcs, nil

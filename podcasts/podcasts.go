@@ -11,6 +11,7 @@ type Podcast struct {
 	Link          string
 	ImageLocation string
 	PodcastType   PodcastType
+	Key           string
 }
 
 type PodcastType string
