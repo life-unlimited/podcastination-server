@@ -3,6 +3,7 @@ package app
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 	"life-unlimited/podcastination/config"
 )
 

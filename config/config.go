@@ -7,10 +7,16 @@ import (
 	"os"
 )
 
+// PodcastinationConfig holds all important config values needed in order to run the App.
 type PodcastinationConfig struct {
+	// PostgresDatasource is the datasource for the postgres database.
 	PostgresDatasource string `json:"postgres_datasource"`
-	PullDirectory      string `json:"pull_directory"`
-	PodcastDirectory   string `json:"podcast_directory"`
+	// PullDir is the directory where tasks are placed.
+	PullDir string `json:"pull_dir"`
+	// PodcastDir is the directory where podcasts are stored.
+	PodcastDir string `json:"podcast_dir"`
+	// ImportInterval defines the duration in minutes after import tasks are retrieved.
+	ImportInterval int `json:"import_interval"`
 }
 
 // ReadConfig reads a PodcastinationConfig from the given filepath.
