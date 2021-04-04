@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const episodeSelect = "select id, title, subtitle, date, author, description, mp3_location, season_id, num from episodes"
+const episodeSelect = "select id, title, subtitle, date, author, description, mp3_location, season_id, num, image_location from episodes"
 
 type EpisodeStore struct {
 	DB *sql.DB
@@ -79,33 +79,35 @@ func (s *EpisodeStore) ById(id int) (*podcasts.Episode, error) {
 // parseRowsAsEpisodes parses rows retrieved from db as episodes.
 func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 	var (
-		id          int
-		title       string
-		subtitle    string
-		date        time.Time
-		author      string
-		description string
-		mp3Location string
-		seasonId    int
-		num         int
+		id            int
+		title         string
+		subtitle      string
+		date          time.Time
+		author        string
+		description   string
+		mp3Location   string
+		seasonId      int
+		num           int
+		imageLocation string
 	)
 
 	var episodes []podcasts.Episode
 	for rows.Next() {
-		err := rows.Scan(&id, &title, &subtitle, &date, &author, &description, &mp3Location, &seasonId, &num)
+		err := rows.Scan(&id, &title, &subtitle, &date, &author, &description, &mp3Location, &seasonId, &num, &imageLocation)
 		if err != nil {
 			return nil, err
 		}
 		episodes = append(episodes, podcasts.Episode{
-			Id:          id,
-			Title:       title,
-			Subtitle:    subtitle,
-			Date:        date,
-			Author:      author,
-			Description: description,
-			MP3Location: mp3Location,
-			SeasonId:    seasonId,
-			Num:         num,
+			Id:            id,
+			Title:         title,
+			Subtitle:      subtitle,
+			Date:          date,
+			Author:        author,
+			Description:   description,
+			ImageLocation: imageLocation,
+			MP3Location:   mp3Location,
+			SeasonId:      seasonId,
+			Num:           num,
 		})
 	}
 	return episodes, nil
