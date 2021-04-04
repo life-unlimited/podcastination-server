@@ -6,7 +6,7 @@ import (
 	"life-unlimited/podcastination/podcasts"
 )
 
-const seasonSelect = "select id, title, subtitle, description, image_location, podcast_id, num from seasons"
+const seasonSelect = "select id, title, subtitle, description, image_location, podcast_id, num, key from seasons"
 
 type SeasonStore struct {
 	DB *sql.DB
@@ -70,6 +70,7 @@ func parseRowsAsSeasons(rows *sql.Rows) ([]podcasts.Season, error) {
 		imageLocation string
 		podcastId     int
 		num           int
+		key           string
 	)
 
 	var seasons []podcasts.Season
@@ -84,6 +85,7 @@ func parseRowsAsSeasons(rows *sql.Rows) ([]podcasts.Season, error) {
 			Description:   description,
 			ImageLocation: imageLocation,
 			Num:           num,
+			Key:           key,
 		})
 	}
 	return seasons, nil

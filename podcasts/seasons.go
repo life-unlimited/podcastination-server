@@ -8,4 +8,5 @@ type Season struct {
 	ImageLocation string
 	PodcastId     int
 	Num           int
+	Key           string
 }
