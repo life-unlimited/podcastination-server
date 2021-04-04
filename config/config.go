@@ -39,6 +39,10 @@ func ReadConfig(filepath string) (PodcastinationConfig, error) {
 		_ = configFile.Close()
 		return PodcastinationConfig{}, fmt.Errorf("could not parse config file: %v", err)
 	}
-
-	return config, configFile.Close()
+	// Close config.
+	err = configFile.Close()
+	if err != nil {
+		return PodcastinationConfig{}, fmt.Errorf("could not close config file: %v", err)
+	}
+	return config, nil
 }
