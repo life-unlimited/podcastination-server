@@ -45,6 +45,24 @@ func (s *SeasonStore) ById(id int) (*podcasts.Season, error) {
 	return &seasons[0], nil
 }
 
+// ByKey retrieves a season from the store with the given Key.
+func (s *SeasonStore) ByKey(key string) (*podcasts.Season, error) {
+	rows, err := s.DB.Query(fmt.Sprintf("%s where key = ?;", seasonSelect), key)
+	if err != nil {
+		return nil, fmt.Errorf("could not query db for season by key %s: %v", key, err)
+	}
+	defer CloseRows(rows)
+
+	seasons, err := parseRowsAsSeasons(rows)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse season row: %v", err)
+	}
+	if len(seasons) != 1 {
+		return nil, fmt.Errorf("get season by key returned %d results, but wanted 1", len(seasons))
+	}
+	return &seasons[0], nil
+}
+
 // ByPodcast retrieves all season from the store corresponding to the given podcast.
 func (s *SeasonStore) ByPodcast(podcastId int) ([]podcasts.Season, error) {
 	rows, err := s.DB.Query(fmt.Sprintf("%s where podcast_id = ?;", seasonSelect), podcastId)
