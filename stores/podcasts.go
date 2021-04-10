@@ -78,11 +78,13 @@ func parseRowsAsPodcasts(rows *sql.Rows) ([]podcasts.Podcast, error) {
 		imageLocation string
 		podcastType   podcasts.PodcastType
 		key           string
+		feedLink      string
 	)
 
 	var pcs []podcasts.Podcast
 	for rows.Next() {
-		err := rows.Scan(&id, &title, &subtitle, &language, &ownerId, &description, &keywords, &link, &imageLocation, &podcastType)
+		err := rows.Scan(&id, &title, &subtitle, &language, &ownerId, &description, &keywords, &link, &imageLocation,
+			&podcastType, &feedLink)
 		if err != nil {
 			return nil, err
 		}
@@ -98,6 +100,7 @@ func parseRowsAsPodcasts(rows *sql.Rows) ([]podcasts.Podcast, error) {
 			ImageLocation: imageLocation,
 			PodcastType:   podcastType,
 			Key:           key,
+			FeedLink:      feedLink,
 		})
 	}
 	return pcs, nil

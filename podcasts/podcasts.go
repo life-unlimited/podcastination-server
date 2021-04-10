@@ -9,6 +9,7 @@ type Podcast struct {
 	Description   string
 	Keywords      []string
 	Link          string
+	FeedLink      string
 	ImageLocation string
 	PodcastType   PodcastType
 	Key           string
