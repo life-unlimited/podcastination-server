@@ -11,6 +11,7 @@ type Episode struct {
 	Description   string
 	ImageLocation string
 	MP3Location   string
+	MP3Length     int
 	SeasonId      int
 	Num           int
 	YouTubeURL    string

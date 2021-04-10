@@ -86,6 +86,7 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 		author        string
 		description   string
 		mp3Location   string
+		mp3Length     int
 		seasonId      int
 		num           int
 		imageLocation string
@@ -110,6 +111,7 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 			YouTubeURL:    ytURL,
 			SeasonId:      seasonId,
 			Num:           num,
+			MP3Length:     mp3Length,
 		})
 	}
 	return episodes, nil
