@@ -5,11 +5,14 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"life-unlimited/podcastination/config"
+	"life-unlimited/podcastination/tasks"
+	"time"
 )
 
 type App struct {
-	config config.PodcastinationConfig
-	db     *sql.DB
+	config    config.PodcastinationConfig
+	db        *sql.DB
+	scheduler *tasks.Scheduler
 }
 
 // NewApp creates a new App.
@@ -28,7 +31,16 @@ func (a *App) Boot() error {
 	}
 	a.db = db
 	defer closeDB(a.db)
-	// TODO
+	// Create scheduler.
+	a.scheduler = tasks.NewScheduler(tasks.SchedulingConfig{
+		PullDir:        a.config.PullDir,
+		PodcastDir:     a.config.PodcastDir,
+		ImportInterval: time.Duration(a.config.ImportInterval) * time.Minute,
+	}, a.db)
+	// Perform integrity check.
+	// TODO: Perform integrity check.
+	// Let's go.
+	a.scheduler.Run()
 	return nil
 }
 
