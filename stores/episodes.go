@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const episodeSelect = "select id, title, subtitle, date, author, description, mp3_location, season_id, num, image_location, yt_url from episodes"
+const episodeSelect = "select id, title, subtitle, date, author, description, mp3_location, season_id, num, image_location, yt_url, is_available from episodes"
 
 type EpisodeStore struct {
 	DB *sql.DB
@@ -91,11 +91,13 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 		num           int
 		imageLocation string
 		ytURL         string
+		isAvailable   bool
 	)
 
 	var episodes []podcasts.Episode
 	for rows.Next() {
-		err := rows.Scan(&id, &title, &subtitle, &date, &author, &description, &mp3Location, &seasonId, &num, &imageLocation)
+		err := rows.Scan(&id, &title, &subtitle, &date, &author, &description, &mp3Location, &seasonId, &num,
+			&imageLocation, &ytURL, &isAvailable)
 		if err != nil {
 			return nil, err
 		}
@@ -112,6 +114,7 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 			SeasonId:      seasonId,
 			Num:           num,
 			MP3Length:     mp3Length,
+			IsAvailable:   isAvailable,
 		})
 	}
 	return episodes, nil

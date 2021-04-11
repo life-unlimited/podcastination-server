@@ -15,4 +15,5 @@ type Episode struct {
 	SeasonId      int
 	Num           int
 	YouTubeURL    string
+	IsAvailable   bool // TODO: Add to database.
 }
