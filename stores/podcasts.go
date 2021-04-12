@@ -29,39 +29,39 @@ func (s *PodcastStore) All() ([]podcasts.Podcast, error) {
 }
 
 // ById retrieves a podcast from the store with the given id.
-func (s *PodcastStore) ById(id int) (*podcasts.Podcast, error) {
+func (s *PodcastStore) ById(id int) (podcasts.Podcast, error) {
 	rows, err := s.DB.Query(fmt.Sprintf("%s where id = ?", podcastSelect), id)
 	if err != nil {
-		return nil, fmt.Errorf("could not query db for podcast by id %v: %v", id, err)
+		return podcasts.Podcast{}, fmt.Errorf("could not query db for podcast by id %v: %v", id, err)
 	}
 	defer CloseRows(rows)
 
 	pcs, err := parseRowsAsPodcasts(rows)
 	if err != nil {
-		return nil, fmt.Errorf("error while parsing podcast row: %v", err)
+		return podcasts.Podcast{}, fmt.Errorf("error while parsing podcast row: %v", err)
 	}
 	if len(pcs) != 1 {
-		return nil, fmt.Errorf("get podcast by id from DB returned %v results, but wanted 1", len(pcs))
+		return podcasts.Podcast{}, fmt.Errorf("get podcast by id from DB returned %v results, but wanted 1", len(pcs))
 	}
-	return &pcs[1], nil
+	return pcs[1], nil
 }
 
 // ByKey retrieves a podcast from the store with the given key.
-func (s *PodcastStore) ByKey(key string) (*podcasts.Podcast, error) {
+func (s *PodcastStore) ByKey(key string) (podcasts.Podcast, error) {
 	rows, err := s.DB.Query(fmt.Sprintf("%s where key = ?", podcastSelect), key)
 	if err != nil {
-		return nil, fmt.Errorf("could not query db for podcast by key %s: %v", key, err)
+		return podcasts.Podcast{}, fmt.Errorf("could not query db for podcast by key %s: %v", key, err)
 	}
 	defer CloseRows(rows)
 
 	pcs, err := parseRowsAsPodcasts(rows)
 	if err != nil {
-		return nil, fmt.Errorf("error while parsing podcast row: %v", err)
+		return podcasts.Podcast{}, fmt.Errorf("error while parsing podcast row: %v", err)
 	}
 	if len(pcs) != 1 {
-		return nil, fmt.Errorf("get podcast by id from DB returned %v results, but wanted 1", len(pcs))
+		return podcasts.Podcast{}, fmt.Errorf("get podcast by id from DB returned %v results, but wanted 1", len(pcs))
 	}
-	return &pcs[1], nil
+	return pcs[1], nil
 }
 
 // parseRowsAsPodcasts parses rows retrieved from db as podcasts.

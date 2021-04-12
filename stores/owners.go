@@ -28,21 +28,21 @@ func (s *OwnerStore) All() ([]podcasts.Owner, error) {
 }
 
 // ById retrieves an owner from the store by id.
-func (s *OwnerStore) ById(id int) (*podcasts.Owner, error) {
+func (s *OwnerStore) ById(id int) (podcasts.Owner, error) {
 	rows, err := s.DB.Query(fmt.Sprintf("%s where id = ?", ownerSelect), id)
 	if err != nil {
-		return nil, fmt.Errorf("could not query db for owner by id: %v", err)
+		return podcasts.Owner{}, fmt.Errorf("could not query db for owner by id: %v", err)
 	}
 	defer CloseRows(rows)
 
 	owners, err := parseRowsAsOwners(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse owner row: %v", err)
+		return podcasts.Owner{}, fmt.Errorf("could not parse owner row: %v", err)
 	}
 	if len(owners) != 1 {
-		return nil, fmt.Errorf("get owner by id returned %d results, but wanted 1", len(owners))
+		return podcasts.Owner{}, fmt.Errorf("get owner by id returned %d results, but wanted 1", len(owners))
 	}
-	return &owners[0], nil
+	return owners[0], nil
 }
 
 // parseRowsAsOwners parses rows retrieved from db as owners.
