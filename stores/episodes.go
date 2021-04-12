@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"life-unlimited/podcastination/podcasts"
-	"log"
 	"time"
 )
 
@@ -149,7 +148,6 @@ RETURNING id`
 // Update updates an episode in the db based on its id.
 func (s *EpisodeStore) Update(e podcasts.Episode) error {
 	id := -1
-	log.Printf("trying to update id: %d", e.Id)
 	err := s.DB.QueryRow(episodeUpdate, e.Title, e.Subtitle, e.Date, e.Author, e.Description, e.MP3Location, e.SeasonId,
 		e.Num, e.ImageLocation, e.YouTubeURL, e.MP3Length, e.IsAvailable, e.Id).Scan(&id)
 	if err != nil {
