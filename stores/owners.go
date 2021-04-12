@@ -29,7 +29,7 @@ func (s *OwnerStore) All() ([]podcasts.Owner, error) {
 
 // ById retrieves an owner from the store by id.
 func (s *OwnerStore) ById(id int) (podcasts.Owner, error) {
-	rows, err := s.DB.Query(fmt.Sprintf("%s where id = ?", ownerSelect), id)
+	rows, err := s.DB.Query(fmt.Sprintf("%s where id = $1", ownerSelect), id)
 	if err != nil {
 		return podcasts.Owner{}, fmt.Errorf("could not query db for owner by id: %v", err)
 	}
