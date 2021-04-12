@@ -81,16 +81,16 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 	var (
 		id            int
 		title         string
-		subtitle      string
+		subtitle      sql.NullString
 		date          time.Time
-		author        string
-		description   string
-		mp3Location   string
+		author        sql.NullString
+		description   sql.NullString
+		mp3Location   sql.NullString
 		mp3Length     int
 		seasonId      int
 		num           int
-		imageLocation string
-		ytURL         string
+		imageLocation sql.NullString
+		ytURL         sql.NullString
 		isAvailable   bool
 	)
 
@@ -104,13 +104,13 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 		episodes = append(episodes, podcasts.Episode{
 			Id:            id,
 			Title:         title,
-			Subtitle:      subtitle,
+			Subtitle:      subtitle.String,
 			Date:          date,
-			Author:        author,
-			Description:   description,
-			ImageLocation: imageLocation,
-			MP3Location:   mp3Location,
-			YouTubeURL:    ytURL,
+			Author:        author.String,
+			Description:   description.String,
+			ImageLocation: imageLocation.String,
+			MP3Location:   mp3Location.String,
+			YouTubeURL:    ytURL.String,
 			SeasonId:      seasonId,
 			Num:           num,
 			MP3Length:     mp3Length,
