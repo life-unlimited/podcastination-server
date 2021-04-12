@@ -6,7 +6,7 @@ import (
 	"life-unlimited/podcastination/podcasts"
 )
 
-const seasonSelect = "select id, title, subtitle, description, image_location, podcast_id, num, key from seasons"
+const seasonSelect = "select s.id, s.title, s.subtitle, s.description, s.image_location, s.podcast_id, s.num, s.key from seasons as s"
 
 type SeasonStore struct {
 	DB *sql.DB
@@ -47,7 +47,7 @@ func (s *SeasonStore) ById(id int) (*podcasts.Season, error) {
 
 // ByKey retrieves a season from the store with the given key and podcast id.
 func (s *SeasonStore) ByKey(key string, podcastId int) (*podcasts.Season, error) {
-	rows, err := s.DB.Query(fmt.Sprintf("%s inner join podcasts as p on podcast.id = season.id where key = $1 "+
+	rows, err := s.DB.Query(fmt.Sprintf("%s inner join podcasts as p on p.id = s.id where s.key = $1 "+
 		"and p.id = $2;", seasonSelect), key, podcastId)
 	if err != nil {
 		return nil, fmt.Errorf("could not query db for season by key %s: %v", key, err)
@@ -94,7 +94,7 @@ func parseRowsAsSeasons(rows *sql.Rows) ([]podcasts.Season, error) {
 
 	var seasons []podcasts.Season
 	for rows.Next() {
-		err := rows.Scan(&id, &title, &subtitle, &description, &imageLocation, &podcastId, &num)
+		err := rows.Scan(&id, &title, &subtitle, &description, &imageLocation, &podcastId, &num, &key)
 		if err != nil {
 			return nil, err
 		}

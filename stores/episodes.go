@@ -45,7 +45,7 @@ func (s *EpisodeStore) ByPodcast(podcastId int) ([]podcasts.Episode, error) {
 
 // BySeason retrieves all episodes from the store that belong to the given season.
 func (s *EpisodeStore) BySeason(seasonId int) ([]podcasts.Episode, error) {
-	rows, err := s.DB.Query(fmt.Sprintf("%s where seasons.id = $1", episodeSelect), seasonId)
+	rows, err := s.DB.Query(fmt.Sprintf("%s where season_id = $1", episodeSelect), seasonId)
 	if err != nil {
 		return nil, fmt.Errorf("could not query db for episodes by season: %v", err)
 	}
