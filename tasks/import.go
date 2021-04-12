@@ -2,14 +2,18 @@ package tasks
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"github.com/hajimehoshi/go-mp3"
 	"io/ioutil"
+	"life-unlimited/podcastination/podcast_xml"
 	"life-unlimited/podcastination/podcasts"
 	"life-unlimited/podcastination/stores"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -23,6 +27,7 @@ type ImportJob struct {
 	PodcastDir string
 	store      struct {
 		podcasts stores.PodcastStore
+		owners   stores.OwnerStore
 		seasons  stores.SeasonStore
 		episodes stores.EpisodeStore
 	}
@@ -74,6 +79,11 @@ func (task *ImportTaskDetails) IsValid() (bool, error) {
 	if len(task.MP3FileName) == 0 {
 		return false, fmt.Errorf("no mp3 file name provided")
 	}
+	// Assure that the image file is either png or jpeg.
+	img := task.ImageFileName
+	if img != "" && !strings.HasSuffix(img, ".png") && !strings.HasSuffix(img, ".jpeg") {
+		return false, fmt.Errorf("image file format neither .png nor .jpeg")
+	}
 	return true, nil
 }
 
@@ -92,16 +102,107 @@ func (job *ImportJob) run() error {
 		return nil
 	}
 	// We have tasks to do.
-	success := 0
+	importSuccess := 0
+	changedPodcasts := make(map[int]struct{})
 	for _, task := range tasks {
-		if err := job.performImportTask(task); err != nil {
+		affectedPodcast, err := job.performImportTask(task)
+		if err != nil {
 			log.Printf("could not perform import task for %s: %v", task.Details.Title, err)
 			continue
 		}
-		success++
+		importSuccess++
+		changedPodcasts[affectedPodcast.Id] = struct{}{}
 	}
-	log.Printf("performed import tasks: %dx success, %dx failure", success, len(tasks)-success)
+	log.Printf("performed import tasks: %dx success, %dx failure", importSuccess, len(tasks)-importSuccess)
+	// Generate new podcast xml files.
+	podcastXMLGenerationFeedback := make(chan bool)
+	for podcastId := range changedPodcasts {
+		// Generate in parallel.
+		go func(podcastId int, success chan bool) {
+			if err := job.refreshPodcastXML(podcastId); err != nil {
+				log.Printf("could not refresh podcast xml for podcast %d: %v", podcastId, err)
+				success <- false
+				return
+			}
+			success <- true
+		}(podcastId, podcastXMLGenerationFeedback)
+	}
+	// Wait for completion.
+	podcastXMLRefreshSuccess := 0
+	for remaining := len(changedPodcasts); remaining > 0; remaining-- {
+		success := <-podcastXMLGenerationFeedback
+		if success {
+			podcastXMLRefreshSuccess++
+		}
+	}
+	close(podcastXMLGenerationFeedback)
+	log.Printf("performed podcast xml refresh: %dx success, %dx failure", podcastXMLRefreshSuccess,
+		len(changedPodcasts)-podcastXMLRefreshSuccess)
+	// Done.
 	return nil
+}
+
+// refreshPodcastXML refreshes the podcast xml file for the given podcast.
+func (job *ImportJob) refreshPodcastXML(podcastId int) error {
+	// Get whole podcast content.
+	creationDetails, err := job.getPodcastAsCreationDetails(podcastId)
+	if err != nil {
+		return fmt.Errorf("could not get creation details: %v", err)
+	}
+	// Generate podcast xml.
+	podcastXML, err := podcast_xml.GeneratePodcastXML(creationDetails)
+	if err != nil {
+		return fmt.Errorf("could not generate podcast xml: %v", err)
+	}
+	output, err := xml.Marshal(podcastXML)
+	if err != nil {
+		return fmt.Errorf("could not marshal podcast xml: %v", err)
+	}
+	// Write podcast xml.
+	f, err := os.Open(filepath.Join(job.PodcastDir, getPodcastFolderName(podcastId)))
+	if err != nil {
+		return fmt.Errorf("could not open podcast xml: %v", err)
+	}
+	err = f.Truncate(0)
+	if err != nil {
+		_ = f.Close()
+		return fmt.Errorf("could not truncate podcast xml: %v", err)
+	}
+	_, err = fmt.Fprint(f, output, len(output))
+	if err != nil {
+		_ = f.Close()
+		return fmt.Errorf("could not write podcast xml to file: %v", err)
+	}
+	return f.Close()
+}
+
+// getPodcastAsCreationDetails retrieves all creation details needed in order to generate a PodcastXML.
+func (job *ImportJob) getPodcastAsCreationDetails(podcastId int) (podcast_xml.CreationDetails, error) {
+	podcast, err := job.store.podcasts.ById(podcastId)
+	if err != nil {
+		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get podcast %d from db: %v", podcastId, err)
+	}
+	owner, err := job.store.owners.ById(podcast.OwnerId)
+	if err != nil {
+		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get owner %d from db: %v",
+			podcast.OwnerId, err)
+	}
+	seasons, err := job.store.seasons.ByPodcast(podcastId)
+	if err != nil {
+		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get seasons for podcast %d from db: %v",
+			podcastId, err)
+	}
+	episodes, err := job.store.episodes.ByPodcast(podcastId)
+	if err != nil {
+		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get episodes for podcast %d from db: %v",
+			podcastId, err)
+	}
+	return podcast_xml.CreationDetails{
+		Owner:    owner,
+		Podcast:  podcast,
+		Seasons:  seasons,
+		Episodes: episodes,
+	}, nil
 }
 
 func getImportTasks(dir string) ([]ImportTask, error) {
@@ -160,53 +261,80 @@ func getImportTaskDetailsFromDir(dir string) (ImportTaskDetails, error) {
 }
 
 // performImportTask finally performs the given task which means that the episode is inserted into the database and
-// moved to its final location.
-func (job *ImportJob) performImportTask(task ImportTask) error {
+// moved to its final location. However this does not perform the podcast xml file refresh.
+func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, error) {
 	// Check the mp3 file.
 	audioLength, err := validateMP3(filepath.Join(task.BaseDir, task.Details.MP3FileName))
 	if err != nil {
-		return fmt.Errorf("error while validating mp3 file: %v", err)
+		return podcasts.Podcast{}, fmt.Errorf("error while validating mp3 file: %v", err)
 	}
 	// Check image.
 	if len(task.Details.ImageFileName) != 0 {
 		image, err := os.Open(filepath.Join(task.BaseDir, task.Details.ImageFileName))
 		if err != nil {
-			return fmt.Errorf("could not open image file: %v", err)
+			return podcasts.Podcast{}, fmt.Errorf("could not open image file: %v", err)
 		}
 		if err = image.Close(); err != nil {
-			return fmt.Errorf("could not close image file: %v", err)
+			return podcasts.Podcast{}, fmt.Errorf("could not close image file: %v", err)
 		}
 	}
 	// Now we can check the database.
 	// Get the podcast.
 	podcast, err := job.store.podcasts.ByKey(task.Details.PodcastKey)
 	if err != nil {
-		return fmt.Errorf("could not get podcast (%s): %v", task.Details.PodcastKey, err)
+		return podcasts.Podcast{}, fmt.Errorf("could not get podcast (%s): %v", task.Details.PodcastKey, err)
 	}
 	// Get the season.
-	season, err := job.store.seasons.ByKey(task.Details.SeasonKey)
+	season, err := job.store.seasons.ByKey(task.Details.SeasonKey, podcast.Id)
 	if err != nil {
-		return fmt.Errorf("could not get season (%s): %v", task.Details.SeasonKey, err)
+		return podcast, fmt.Errorf("could not get season %s in podcast %d: %v", task.Details.SeasonKey, podcast.Id, err)
+	}
+	// Get current episodes in season in order to get the latest episode number.
+	episodesInSeason, err := job.store.episodes.BySeason(season.Id)
+	if err != nil {
+		return podcast, fmt.Errorf("could not get episodes in season %d: %v", season.Id, err)
+	}
+	episodeNum := 0
+	for _, episodeInSeason := range episodesInSeason {
+		if episodeInSeason.Num > episodeNum {
+			episodeNum = episodeInSeason.Num
+		}
 	}
 	// Create new episode entry and insert into db as we need the assigned id.
 	episode := podcasts.Episode{
-		Title:         task.Details.Title,
-		Subtitle:      task.Details.Subtitle,
-		Date:          task.Details.Date,
-		Author:        task.Details.Author,
-		Description:   task.Details.Description,
-		ImageLocation: filepath.Join(task.BaseDir, task.Details.ImageFileName),
-		MP3Location:   filepath.Join(task.BaseDIr, task.Details.MP3FileName),
-		MP3Length:     0,
-		SeasonId:      0,
-		Num:           0,
-		YouTubeURL:    "",
-		IsAvailable:   false,
+		Title:       task.Details.Title,
+		Subtitle:    task.Details.Subtitle,
+		Date:        task.Details.Date,
+		Author:      task.Details.Author,
+		Description: task.Details.Description,
+		MP3Length:   audioLength,
+		SeasonId:    season.Id,
+		Num:         episodeNum,
+		YouTubeURL:  task.Details.YouTubeURL,
+		IsAvailable: false, // This will be updated to true when all files are transferred.
 	}
+	// Insert into db and get the inserted episode with its assigned id.
+	episode, err = job.store.episodes.Create(episode)
+	if err != nil {
+		return podcast, fmt.Errorf("could not insert episode into db: %v", err)
+	}
+	// Get new file locations.
+	fileLocations := getEpisodeFileLocations(episode, podcast.Id)
+	episode.MP3Location = fileLocations.mp3FullPath()
+	episode.ImageLocation = fileLocations.imageFullPath()
 	// Transfer the files.
-	// TODO: Assure that we get the episode id.
+	err = job.performFileTransfer(episode, task, fileLocations)
+	if err != nil {
+		return podcast, fmt.Errorf("could not perform file transfer: %v", err)
+	}
 	// Set active to true in db for episode.
-	return nil
+	episode.IsAvailable = true
+	err = job.store.episodes.Update(episode)
+	if err != nil {
+		return podcast, fmt.Errorf("could not update episode data in db: %v", err)
+	}
+	// Podcast xml generation is done after all import tasks have been performed.
+	return podcast, nil
 }
 
 // validateMP3 validates an mp3 file and returns the audio length in seconds.
@@ -232,23 +360,71 @@ func validateMP3(file string) (int, error) {
 }
 
 type episodeFileLocations struct {
-	BaseDir       string
-	MP3FileName   string
-	ImageFileName string
+	baseDir       string
+	mp3FileName   string
+	imageFileName string
 }
 
-func getEpisodeFileLocations(episode podcasts.Episode) episodeFileLocations {
-	folderName := getFolderName(episode)
+func getEpisodeFileLocations(episode podcasts.Episode, podcastId int) episodeFileLocations {
+	folderName := getFolderName(episode, podcastId)
 	cleanTitle := filepath.Clean(episode.Title)
-	return episodeFileLocations{
-		BaseDir:       folderName,
-		MP3FileName:   fmt.Sprintf("%s.%s", strings.Replace(cleanTitle, " ", "_", -1), cleanTitle),
-		ImageFileName: "thumb",
+	loc := episodeFileLocations{
+		baseDir:     folderName,
+		mp3FileName: fmt.Sprintf("%s.%s.mp3", strings.Replace(cleanTitle, " ", "_", -1), cleanTitle),
 	}
+	if episode.ImageLocation != "" {
+		loc.imageFileName = fmt.Sprintf("thumb%s", filepath.Ext(episode.ImageLocation))
+	}
+	return loc
+}
+
+func (loc episodeFileLocations) mp3FullPath() string {
+	return filepath.Join(loc.baseDir, loc.mp3FileName)
+}
+
+func (loc episodeFileLocations) imageFullPath() string {
+	if loc.imageFileName == "" {
+		return ""
+	}
+	return filepath.Join(loc.baseDir, loc.imageFileName)
 }
 
 // getFolderName returns the folder name created from the given episode.
-func getFolderName(episode podcasts.Episode) string {
+func getFolderName(episode podcasts.Episode, podcastId int) string {
 	timestamp := episode.Date.Format("yyyy-MM-dd_HHmmss")
-	return fmt.Sprintf("%s_%d", timestamp, episode.Id)
+	return filepath.Join(getPodcastFolderName(podcastId), fmt.Sprintf("%s_%d", timestamp, episode.Id))
+}
+
+func getPodcastFolderName(podcastId int) string {
+	return strconv.Itoa(podcastId)
+}
+
+// performFileTransfer transfers all episode related files to the given destination. This also deletes the task
+// file.
+func (job *ImportJob) performFileTransfer(episode podcasts.Episode, task ImportTask,
+	fileLocations episodeFileLocations) error {
+	sourceDirFull := filepath.Join(job.PullDir, task.BaseDir)
+	// Create target directory.
+	err := os.MkdirAll(fileLocations.baseDir, 0644) // Create with read-write read read.
+	// Move the files.
+	// Move the mp3.
+	mp3Destination := filepath.Join(job.PodcastDir, episode.MP3Location)
+	err = os.Rename(filepath.Join(sourceDirFull, task.Details.MP3FileName), mp3Destination)
+	if err != nil {
+		return fmt.Errorf("could not move mp3 to final destination: %v", err)
+	}
+	// Move the image if existing.
+	if episode.ImageLocation != "" {
+		imageDestination := filepath.Join(job.PodcastDir, episode.ImageLocation)
+		err = os.Rename(filepath.Join(sourceDirFull, task.Details.ImageFileName), imageDestination)
+		if err != nil {
+			return fmt.Errorf("could not move image to final destination: %v", err)
+		}
+	}
+	// Delete the json task file.
+	err = os.Remove(filepath.Join(sourceDirFull, ImportTaskDetailsFileName))
+	if err != nil {
+		return fmt.Errorf("could not delete task file: %v", err)
+	}
+	return nil
 }
