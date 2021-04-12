@@ -82,10 +82,10 @@ func (task *ImportTaskDetails) IsValid() (bool, error) {
 	if len(task.MP3FileName) == 0 {
 		return false, fmt.Errorf("no mp3 file name provided")
 	}
-	// Assure that the image file is either png or jpeg.
+	// Assure that the image file is png
 	img := task.ImageFileName
-	if img != "" && !strings.HasSuffix(img, ".png") && !strings.HasSuffix(img, ".jpeg") {
-		return false, fmt.Errorf("image file format neither .png nor .jpeg")
+	if img != "" && !strings.HasSuffix(img, ".png") {
+		return false, fmt.Errorf("image file format must be .png")
 	}
 	return true, nil
 }
@@ -372,11 +372,9 @@ func getEpisodeFileLocations(episode podcasts.Episode, podcastId int) episodeFil
 	folderName := getEpisodeFolderName(episode, podcastId)
 	cleanTitle := filepath.Clean(episode.Title)
 	loc := episodeFileLocations{
-		baseDir:     folderName,
-		mp3FileName: fmt.Sprintf("%d_%s.mp3", episode.Id, strings.Replace(cleanTitle, " ", "_", -1)),
-	}
-	if episode.ImageLocation != "" {
-		loc.imageFileName = fmt.Sprintf("thumb%s", filepath.Ext(episode.ImageLocation))
+		baseDir:       folderName,
+		mp3FileName:   fmt.Sprintf("%d_%s.mp3", episode.Id, strings.Replace(cleanTitle, " ", "_", -1)),
+		imageFileName: fmt.Sprintf("thumb.png"),
 	}
 	return loc
 }
@@ -419,9 +417,11 @@ func (job *ImportJob) performFileTransfer(episode podcasts.Episode, task ImportT
 		return fmt.Errorf("could not move mp3 to final destination: %v", err)
 	}
 	// Move the image if existing.
-	if episode.ImageLocation != "" {
+	imageSource := filepath.Join(task.BaseDir, task.Details.ImageFileName)
+	_, err = os.Stat(imageSource)
+	if err == nil {
 		imageDestination := filepath.Join(job.PodcastDir, episode.ImageLocation)
-		err = os.Rename(filepath.Join(task.BaseDir, task.Details.ImageFileName), imageDestination)
+		err = os.Rename(imageSource, imageDestination)
 		if err != nil {
 			return fmt.Errorf("could not move image to final destination: %v", err)
 		}
