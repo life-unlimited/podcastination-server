@@ -90,7 +90,7 @@ func (task *ImportTaskDetails) IsValid() (bool, error) {
 	return true, nil
 }
 
-func (job *ImportJob) importInterval() time.Duration {
+func (job *ImportJob) interval() time.Duration {
 	return 15 * time.Minute
 }
 

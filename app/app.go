@@ -75,7 +75,9 @@ func (a *App) Boot() error {
 	return nil
 }
 
+// Shutdown shuts down the app.
 func (a *App) Shutdown() error {
+	a.scheduler.Stop()
 	if a.db != nil {
 		return closeDB(a.db)
 	}

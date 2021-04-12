@@ -28,7 +28,7 @@ type SchedulingConfig struct {
 type SchedulingJob interface {
 	name() string
 	run() error
-	importInterval() time.Duration
+	interval() time.Duration
 }
 
 func NewScheduler(config SchedulingConfig, db *sql.DB) *Scheduler {
@@ -53,26 +53,27 @@ func (s *Scheduler) ScheduleJob(j SchedulingJob, initialRun bool) {
 				log.Printf("%s initial run failed: %v", jobLogPrefix(myJob), err)
 			}
 		}
-		// TODO: Setup scheduling and interrupt handling.
-		//alive := true
-		//for alive {
-		//	select {
-		//	case <-s.stop:
-		//		alive = false
-		//		break
-		//	case <-time.After(s.config.ImportInterval):
-		//		if err := s.runImports(); err != nil {
-		//			log.Fatalf("could not run import tasks: %v", err)
-		//		}
-		//		break
-		//	}
-		//}
+		alive := true
+		for alive {
+			select {
+			case <-s.stop:
+				alive = false
+				break
+			case <-time.After(j.interval()):
+				if err := j.run(); err != nil {
+					log.Fatalf("%s could not run job: %v", jobLogPrefix(myJob), err)
+				}
+				break
+			}
+		}
 	}(newJob)
 }
 
+// Stop stops all registered jobs.
 func (s *Scheduler) Stop() {
-	s.stop <- struct{}{}
-	// TODO
+	for _, j := range s.jobs {
+		j.stop <- struct{}{}
+	}
 }
 
 func jobLogPrefix(job *job) string {
