@@ -11,7 +11,7 @@ type PodcastStore struct {
 	DB *sql.DB
 }
 
-const podcastSelect = "select id, title, subtitle, language, owner_id, description, keywords, link, image_location, type, key from podcasts"
+const podcastSelect = "select id, title, subtitle, language, owner_id, description, keywords, link, image_location, type, key, feed_link from podcasts"
 
 // All retrieves all podcasts from the store.
 func (s *PodcastStore) All() ([]podcasts.Podcast, error) {
@@ -41,7 +41,7 @@ func (s *PodcastStore) ById(id int) (podcasts.Podcast, error) {
 		return podcasts.Podcast{}, fmt.Errorf("error while parsing podcast row: %v", err)
 	}
 	if len(pcs) != 1 {
-		return podcasts.Podcast{}, fmt.Errorf("get podcast by id from DB returned %v results, but wanted 1", len(pcs))
+		return podcasts.Podcast{}, fmt.Errorf("get podcast by id from db returned %v results, but wanted 1", len(pcs))
 	}
 	return pcs[1], nil
 }
@@ -59,9 +59,9 @@ func (s *PodcastStore) ByKey(key string) (podcasts.Podcast, error) {
 		return podcasts.Podcast{}, fmt.Errorf("error while parsing podcast row: %v", err)
 	}
 	if len(pcs) != 1 {
-		return podcasts.Podcast{}, fmt.Errorf("get podcast by id from DB returned %v results, but wanted 1", len(pcs))
+		return podcasts.Podcast{}, fmt.Errorf("get podcast by key from db returned %v results, but wanted 1", len(pcs))
 	}
-	return pcs[1], nil
+	return pcs[0], nil
 }
 
 // parseRowsAsPodcasts parses rows retrieved from db as podcasts.
@@ -69,37 +69,37 @@ func parseRowsAsPodcasts(rows *sql.Rows) ([]podcasts.Podcast, error) {
 	var (
 		id            int
 		title         string
-		subtitle      string
+		subtitle      sql.NullString
 		language      podcasts.Language
 		ownerId       int
-		description   string
-		keywords      string
-		link          string
-		imageLocation string
-		podcastType   podcasts.PodcastType
-		key           string
+		description   sql.NullString
+		keywords      sql.NullString
+		link          sql.NullString
+		imageLocation sql.NullString
+		podcastType   sql.NullString
+		key           sql.NullString
 		feedLink      string
 	)
 
 	var pcs []podcasts.Podcast
 	for rows.Next() {
 		err := rows.Scan(&id, &title, &subtitle, &language, &ownerId, &description, &keywords, &link, &imageLocation,
-			&podcastType, &feedLink)
+			&podcastType, &key, &feedLink)
 		if err != nil {
 			return nil, err
 		}
 		pcs = append(pcs, podcasts.Podcast{
 			Id:            id,
 			Title:         title,
-			Subtitle:      subtitle,
+			Subtitle:      subtitle.String,
 			Language:      language,
 			OwnerId:       ownerId,
-			Description:   description,
-			Keywords:      strings.Split(keywords, ","),
-			Link:          link,
-			ImageLocation: imageLocation,
-			PodcastType:   podcastType,
-			Key:           key,
+			Description:   description.String,
+			Keywords:      strings.Split(keywords.String, ","),
+			Link:          link.String,
+			ImageLocation: imageLocation.String,
+			PodcastType:   podcasts.PodcastType(podcastType.String),
+			Key:           key.String,
 			FeedLink:      feedLink,
 		})
 	}
