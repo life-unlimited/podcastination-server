@@ -51,7 +51,7 @@ func parseRowsAsOwners(rows *sql.Rows) ([]podcasts.Owner, error) {
 		id        int
 		name      string
 		email     string
-		copyright string
+		copyright sql.NullString
 	)
 
 	var owners []podcasts.Owner
@@ -64,7 +64,7 @@ func parseRowsAsOwners(rows *sql.Rows) ([]podcasts.Owner, error) {
 			Id:        id,
 			Name:      name,
 			Email:     email,
-			Copyright: copyright,
+			Copyright: copyright.String,
 		})
 	}
 	return owners, nil
