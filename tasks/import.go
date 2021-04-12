@@ -3,13 +3,14 @@ package tasks
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hajimehoshi/go-mp3"
 	"io/ioutil"
+	"life-unlimited/podcastination/podcasts"
 	"life-unlimited/podcastination/stores"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -40,8 +41,8 @@ type ImportTaskDetails struct {
 	SeasonKey string `json:"season_key"`
 	// Title is the title of the episode.
 	Title string `json:"title"`
-	// SubTitle is the subtitle for the episode.
-	SubTitle string `json:"sub_title"`
+	// Subtitle is the subtitle for the episode.
+	Subtitle string `json:"sub_title"`
 	// Date is the creation date for the episode. This is also used in order to sort tasks for applying the right episode order.
 	Date time.Time `json:"date"`
 	// Author is the author of episode. If none provided, 'Unknown' will be used.
@@ -82,6 +83,7 @@ func (job *ImportJob) importInterval() time.Duration {
 
 // run runs the import tasks (yay).
 func (job *ImportJob) run() error {
+	// Retrieve import tasks.
 	tasks, err := getImportTasks(job.PullDir)
 	if err != nil {
 		return fmt.Errorf("error while retrieving import tasks: %v", err)
@@ -157,6 +159,8 @@ func getImportTaskDetailsFromDir(dir string) (ImportTaskDetails, error) {
 	return details, nil
 }
 
+// performImportTask finally performs the given task which means that the episode is inserted into the database and
+// moved to its final location.
 func (job *ImportJob) performImportTask(task ImportTask) error {
 	// Check the mp3 file.
 	audioLength, err := validateMP3(filepath.Join(task.BaseDir, task.Details.MP3FileName))
@@ -184,6 +188,24 @@ func (job *ImportJob) performImportTask(task ImportTask) error {
 	if err != nil {
 		return fmt.Errorf("could not get season (%s): %v", task.Details.SeasonKey, err)
 	}
+	// Create new episode entry and insert into db as we need the assigned id.
+	episode := podcasts.Episode{
+		Title:         task.Details.Title,
+		Subtitle:      task.Details.Subtitle,
+		Date:          task.Details.Date,
+		Author:        task.Details.Author,
+		Description:   task.Details.Description,
+		ImageLocation: filepath.Join(task.BaseDir, task.Details.ImageFileName),
+		MP3Location:   filepath.Join(task.BaseDIr, task.Details.MP3FileName),
+		MP3Length:     0,
+		SeasonId:      0,
+		Num:           0,
+		YouTubeURL:    "",
+		IsAvailable:   false,
+	}
+	// Transfer the files.
+	// TODO: Assure that we get the episode id.
+	// Set active to true in db for episode.
 	return nil
 }
 
@@ -207,4 +229,26 @@ func validateMP3(file string) (int, error) {
 		return -1, fmt.Errorf("could not close mp3 file: %v", err)
 	}
 	return audioLength, nil
+}
+
+type episodeFileLocations struct {
+	BaseDir       string
+	MP3FileName   string
+	ImageFileName string
+}
+
+func getEpisodeFileLocations(episode podcasts.Episode) episodeFileLocations {
+	folderName := getFolderName(episode)
+	cleanTitle := filepath.Clean(episode.Title)
+	return episodeFileLocations{
+		BaseDir:       folderName,
+		MP3FileName:   fmt.Sprintf("%s.%s", strings.Replace(cleanTitle, " ", "_", -1), cleanTitle),
+		ImageFileName: "thumb",
+	}
+}
+
+// getFolderName returns the folder name created from the given episode.
+func getFolderName(episode podcasts.Episode) string {
+	timestamp := episode.Date.Format("yyyy-MM-dd_HHmmss")
+	return fmt.Sprintf("%s_%d", timestamp, episode.Id)
 }
