@@ -169,21 +169,13 @@ func (job *ImportJob) refreshPodcastXML(podcastId int) error {
 	if err != nil {
 		return fmt.Errorf("could not marshal podcast xml: %v", err)
 	}
-	log.Println(string(output))
 	// Write podcast xml.
 	podcastXMLFilePath := filepath.Join(job.PodcastDir, getPodcastFolderName(podcastId), PodcastXMLDetailsFileName)
-	return ioutil.WriteFile(podcastXMLFilePath, output, 0633)
-	//f, err := os.OpenFile(filepath.Join(job.PodcastDir, getPodcastFolderName(podcastId), PodcastXMLDetailsFileName),
-	//	os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0655)
-	//if err != nil {
-	//	return fmt.Errorf("could not open podcast xml: %v", err)
-	//}
-	//_, err = fmt.Fprint(f, output, len(output))
-	//if err != nil {
-	//	_ = f.Close()
-	//	return fmt.Errorf("could not write podcast xml to file: %v", err)
-	//}
-	//return f.Close()
+	err = ioutil.WriteFile(podcastXMLFilePath, output, 0633)
+	if err != nil {
+		return fmt.Errorf("could not write podcast xml: %v", err)
+	}
+	return nil
 }
 
 // getPodcastAsCreationDetails retrieves all creation details needed in order to generate a PodcastXML.
