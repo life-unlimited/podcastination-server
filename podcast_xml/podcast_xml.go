@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"life-unlimited/podcastination/podcasts"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -198,7 +199,7 @@ func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.S
 		},
 		Enclosure: enclosure{
 			URL:    episode.MP3Location,
-			Length: string(rune(episode.MP3Length)),
+			Length: strconv.Itoa(episode.MP3Length),
 			Type:   "audio/mpeg",
 		},
 		ITunesDuration:    episode.MP3Length,
