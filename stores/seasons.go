@@ -83,13 +83,13 @@ func (s *SeasonStore) ByPodcast(podcastId int) ([]podcasts.Season, error) {
 func parseRowsAsSeasons(rows *sql.Rows) ([]podcasts.Season, error) {
 	var (
 		id            int
-		title         string
-		subtitle      string
-		description   string
-		imageLocation string
+		title         sql.NullString
+		subtitle      sql.NullString
+		description   sql.NullString
+		imageLocation sql.NullString
 		podcastId     int
 		num           int
-		key           string
+		key           sql.NullString
 	)
 
 	var seasons []podcasts.Season
@@ -99,12 +99,12 @@ func parseRowsAsSeasons(rows *sql.Rows) ([]podcasts.Season, error) {
 			return nil, err
 		}
 		seasons = append(seasons, podcasts.Season{
-			Title:         title,
-			Subtitle:      subtitle,
-			Description:   description,
-			ImageLocation: imageLocation,
+			Title:         title.String,
+			Subtitle:      subtitle.String,
+			Description:   description.String,
+			ImageLocation: imageLocation.String,
 			Num:           num,
-			Key:           key,
+			Key:           key.String,
 		})
 	}
 	return seasons, nil
