@@ -20,17 +20,20 @@ import (
 
 // ImportTaskDetailsFileName is the file name of the json file that holds the relevant task details.
 const ImportTaskDetailsFileName = "task.json"
+const PodcastXMLDetailsFileName = "podcast.xml"
 
 // ImportJob is the task that is scheduled.
 type ImportJob struct {
 	PullDir    string
 	PodcastDir string
-	store      struct {
-		podcasts stores.PodcastStore
-		owners   stores.OwnerStore
-		seasons  stores.SeasonStore
-		episodes stores.EpisodeStore
-	}
+	Store      ImportJobStores
+}
+
+type ImportJobStores struct {
+	Podcasts stores.PodcastStore
+	Owners   stores.OwnerStore
+	Seasons  stores.SeasonStore
+	Episodes stores.EpisodeStore
 }
 
 type ImportTask struct {
@@ -91,6 +94,10 @@ func (job *ImportJob) importInterval() time.Duration {
 	return 15 * time.Minute
 }
 
+func (job *ImportJob) name() string {
+	return "ImportJob"
+}
+
 // run runs the import tasks (yay).
 func (job *ImportJob) run() error {
 	// Retrieve import tasks.
@@ -114,6 +121,10 @@ func (job *ImportJob) run() error {
 		changedPodcasts[affectedPodcast.Id] = struct{}{}
 	}
 	log.Printf("performed import tasks: %dx success, %dx failure", importSuccess, len(tasks)-importSuccess)
+	if importSuccess == 0 {
+		log.Printf("no podcasts need a podcast xml refresh.")
+		return nil
+	}
 	// Generate new podcast xml files.
 	podcastXMLGenerationFeedback := make(chan bool)
 	for podcastId := range changedPodcasts {
@@ -154,45 +165,44 @@ func (job *ImportJob) refreshPodcastXML(podcastId int) error {
 	if err != nil {
 		return fmt.Errorf("could not generate podcast xml: %v", err)
 	}
-	output, err := xml.Marshal(podcastXML)
+	output, err := xml.MarshalIndent(podcastXML, "", "  ")
 	if err != nil {
 		return fmt.Errorf("could not marshal podcast xml: %v", err)
 	}
+	log.Println(string(output))
 	// Write podcast xml.
-	f, err := os.Open(filepath.Join(job.PodcastDir, getPodcastFolderName(podcastId)))
-	if err != nil {
-		return fmt.Errorf("could not open podcast xml: %v", err)
-	}
-	err = f.Truncate(0)
-	if err != nil {
-		_ = f.Close()
-		return fmt.Errorf("could not truncate podcast xml: %v", err)
-	}
-	_, err = fmt.Fprint(f, output, len(output))
-	if err != nil {
-		_ = f.Close()
-		return fmt.Errorf("could not write podcast xml to file: %v", err)
-	}
-	return f.Close()
+	podcastXMLFilePath := filepath.Join(job.PodcastDir, getPodcastFolderName(podcastId), PodcastXMLDetailsFileName)
+	return ioutil.WriteFile(podcastXMLFilePath, output, 0633)
+	//f, err := os.OpenFile(filepath.Join(job.PodcastDir, getPodcastFolderName(podcastId), PodcastXMLDetailsFileName),
+	//	os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0655)
+	//if err != nil {
+	//	return fmt.Errorf("could not open podcast xml: %v", err)
+	//}
+	//_, err = fmt.Fprint(f, output, len(output))
+	//if err != nil {
+	//	_ = f.Close()
+	//	return fmt.Errorf("could not write podcast xml to file: %v", err)
+	//}
+	//return f.Close()
 }
 
 // getPodcastAsCreationDetails retrieves all creation details needed in order to generate a PodcastXML.
 func (job *ImportJob) getPodcastAsCreationDetails(podcastId int) (podcast_xml.CreationDetails, error) {
-	podcast, err := job.store.podcasts.ById(podcastId)
+	podcast, err := job.Store.Podcasts.ById(podcastId)
 	if err != nil {
 		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get podcast %d from db: %v", podcastId, err)
 	}
-	owner, err := job.store.owners.ById(podcast.OwnerId)
+	owner, err := job.Store.Owners.ById(podcast.OwnerId)
 	if err != nil {
 		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get owner %d from db: %v",
 			podcast.OwnerId, err)
 	}
-	seasons, err := job.store.seasons.ByPodcast(podcastId)
+	seasons, err := job.Store.Seasons.ByPodcast(podcastId)
 	if err != nil {
 		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get seasons for podcast %d from db: %v",
 			podcastId, err)
 	}
-	episodes, err := job.store.episodes.ByPodcast(podcastId)
+	episodes, err := job.Store.Episodes.ByPodcast(podcastId)
 	if err != nil {
 		return podcast_xml.CreationDetails{}, fmt.Errorf("could not get episodes for podcast %d from db: %v",
 			podcastId, err)
@@ -280,17 +290,17 @@ func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, erro
 	}
 	// Now we can check the database.
 	// Get the podcast.
-	podcast, err := job.store.podcasts.ByKey(task.Details.PodcastKey)
+	podcast, err := job.Store.Podcasts.ByKey(task.Details.PodcastKey)
 	if err != nil {
 		return podcasts.Podcast{}, fmt.Errorf("could not get podcast (%s): %v", task.Details.PodcastKey, err)
 	}
 	// Get the season.
-	season, err := job.store.seasons.ByKey(task.Details.SeasonKey, podcast.Id)
+	season, err := job.Store.Seasons.ByKey(task.Details.SeasonKey, podcast.Id)
 	if err != nil {
 		return podcast, fmt.Errorf("could not get season %s in podcast %d: %v", task.Details.SeasonKey, podcast.Id, err)
 	}
 	// Get current episodes in season in order to get the latest episode number.
-	episodesInSeason, err := job.store.episodes.BySeason(season.Id)
+	episodesInSeason, err := job.Store.Episodes.BySeason(season.Id)
 	if err != nil {
 		return podcast, fmt.Errorf("could not get episodes in season %d: %v", season.Id, err)
 	}
@@ -300,6 +310,7 @@ func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, erro
 			episodeNum = episodeInSeason.Num
 		}
 	}
+	episodeNum++
 	// Create new episode entry and insert into db as we need the assigned id.
 	episode := podcasts.Episode{
 		Title:       task.Details.Title,
@@ -314,7 +325,7 @@ func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, erro
 		IsAvailable: false, // This will be updated to true when all files are transferred.
 	}
 	// Insert into db and get the inserted episode with its assigned id.
-	episode, err = job.store.episodes.Create(episode)
+	episode, err = job.Store.Episodes.Create(episode)
 	if err != nil {
 		return podcast, fmt.Errorf("could not insert episode into db: %v", err)
 	}
@@ -329,7 +340,7 @@ func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, erro
 	}
 	// Set active to true in db for episode.
 	episode.IsAvailable = true
-	err = job.store.episodes.Update(episode)
+	err = job.Store.Episodes.Update(episode)
 	if err != nil {
 		return podcast, fmt.Errorf("could not update episode data in db: %v", err)
 	}
@@ -366,11 +377,11 @@ type episodeFileLocations struct {
 }
 
 func getEpisodeFileLocations(episode podcasts.Episode, podcastId int) episodeFileLocations {
-	folderName := getFolderName(episode, podcastId)
+	folderName := getEpisodeFolderName(episode, podcastId)
 	cleanTitle := filepath.Clean(episode.Title)
 	loc := episodeFileLocations{
 		baseDir:     folderName,
-		mp3FileName: fmt.Sprintf("%s.%s.mp3", strings.Replace(cleanTitle, " ", "_", -1), cleanTitle),
+		mp3FileName: fmt.Sprintf("%d_%s.mp3", episode.Id, strings.Replace(cleanTitle, " ", "_", -1)),
 	}
 	if episode.ImageLocation != "" {
 		loc.imageFileName = fmt.Sprintf("thumb%s", filepath.Ext(episode.ImageLocation))
@@ -389,9 +400,9 @@ func (loc episodeFileLocations) imageFullPath() string {
 	return filepath.Join(loc.baseDir, loc.imageFileName)
 }
 
-// getFolderName returns the folder name created from the given episode.
-func getFolderName(episode podcasts.Episode, podcastId int) string {
-	timestamp := episode.Date.Format("yyyy-MM-dd_HHmmss")
+// getEpisodeFolderName returns the folder name created from the given episode.
+func getEpisodeFolderName(episode podcasts.Episode, podcastId int) string {
+	timestamp := episode.Date.Format("20060102_150405")
 	return filepath.Join(getPodcastFolderName(podcastId), fmt.Sprintf("%s_%d", timestamp, episode.Id))
 }
 
@@ -403,26 +414,28 @@ func getPodcastFolderName(podcastId int) string {
 // file.
 func (job *ImportJob) performFileTransfer(episode podcasts.Episode, task ImportTask,
 	fileLocations episodeFileLocations) error {
-	sourceDirFull := filepath.Join(job.PullDir, task.BaseDir)
 	// Create target directory.
-	err := os.MkdirAll(fileLocations.baseDir, 0644) // Create with read-write read read.
+	err := os.MkdirAll(filepath.Join(job.PodcastDir, fileLocations.baseDir), 0744) // Create with read-write read read.
+	if err != nil {
+		return fmt.Errorf("could not create episode directory: %v", err)
+	}
 	// Move the files.
 	// Move the mp3.
 	mp3Destination := filepath.Join(job.PodcastDir, episode.MP3Location)
-	err = os.Rename(filepath.Join(sourceDirFull, task.Details.MP3FileName), mp3Destination)
+	err = os.Rename(filepath.Join(task.BaseDir, task.Details.MP3FileName), mp3Destination)
 	if err != nil {
 		return fmt.Errorf("could not move mp3 to final destination: %v", err)
 	}
 	// Move the image if existing.
 	if episode.ImageLocation != "" {
 		imageDestination := filepath.Join(job.PodcastDir, episode.ImageLocation)
-		err = os.Rename(filepath.Join(sourceDirFull, task.Details.ImageFileName), imageDestination)
+		err = os.Rename(filepath.Join(task.BaseDir, task.Details.ImageFileName), imageDestination)
 		if err != nil {
 			return fmt.Errorf("could not move image to final destination: %v", err)
 		}
 	}
-	// Delete the json task file.
-	err = os.Remove(filepath.Join(sourceDirFull, ImportTaskDetailsFileName))
+	// Delete the source folder
+	err = os.RemoveAll(task.BaseDir)
 	if err != nil {
 		return fmt.Errorf("could not delete task file: %v", err)
 	}

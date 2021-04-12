@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"life-unlimited/podcastination/podcasts"
+	"log"
 	"time"
 )
 
-const episodeSelect = "select id, title, subtitle, date, author, description, mp3_location, season_id, num, image_location, yt_url, mp3_length, is_available from episodes"
+const episodeSelect = `select e.id, e.title, e.subtitle, e.date, e.author, e.description, e.mp3_location, e.season_id, 
+       e.num, e.image_location, e.yt_url, e.mp3_length, e.is_available from episodes as e`
 
 type EpisodeStore struct {
 	DB *sql.DB
@@ -30,7 +32,7 @@ func (s *EpisodeStore) All() ([]podcasts.Episode, error) {
 
 // ByPodcast retrieves all episodes from the store that belong to the given podcast.
 func (s *EpisodeStore) ByPodcast(podcastId int) ([]podcasts.Episode, error) {
-	rows, err := s.DB.Query(fmt.Sprintf("%s join seasons on episodes.season_id = seasons.id where seasons.podcast_id = $1", episodeSelect), podcastId)
+	rows, err := s.DB.Query(fmt.Sprintf("%s join seasons on e.season_id = seasons.id where seasons.podcast_id = $1", episodeSelect), podcastId)
 	if err != nil {
 		return nil, fmt.Errorf("could not query db for episodes by podcast: %v", err)
 	}
@@ -141,11 +143,13 @@ func (s *EpisodeStore) Create(e podcasts.Episode) (podcasts.Episode, error) {
 const episodeUpdate = `UPDATE episodes
 SET title=$1, subtitle=$2, date=$3, author=$4, description=$5, mp3_location=$6, season_id=$7, num=$8,
     image_location=$9, yt_url=$10, mp3_length=$11, is_available=$12
-WHERE id=$13`
+WHERE id=$13
+RETURNING id`
 
 // Update updates an episode in the db based on its id.
 func (s *EpisodeStore) Update(e podcasts.Episode) error {
 	id := -1
+	log.Printf("trying to update id: %d", e.Id)
 	err := s.DB.QueryRow(episodeUpdate, e.Title, e.Subtitle, e.Date, e.Author, e.Description, e.MP3Location, e.SeasonId,
 		e.Num, e.ImageLocation, e.YouTubeURL, e.MP3Length, e.IsAvailable, e.Id).Scan(&id)
 	if err != nil {

@@ -99,10 +99,12 @@ func parseRowsAsSeasons(rows *sql.Rows) ([]podcasts.Season, error) {
 			return nil, err
 		}
 		seasons = append(seasons, podcasts.Season{
+			Id:            id,
 			Title:         title.String,
 			Subtitle:      subtitle.String,
 			Description:   description.String,
 			ImageLocation: imageLocation.String,
+			PodcastId:     podcastId,
 			Num:           num,
 			Key:           key.String,
 		})

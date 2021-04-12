@@ -1,17 +1,16 @@
 package podcast_xml
 
-type PodcastXML struct {
-	RSS     rss     `xml:"rss"`
-	Channel channel `xml:"channel"`
-}
+import "encoding/xml"
 
-type rss struct {
-	XmlnsAtom    string `xml:"xmlns:atom,attr"`
-	XmlnsContent string `xml:"xmlns:content,attr"`
-	XmlnsITunes  string `xml:"xmlns:itunes,attr"`
-	XmlnsGPlay   string `xml:"xmlns:googleplay,attr"`
-	XmlnsMedia   string `xml:"xmlns:media,attr"`
-	Version      string `xml:"version,attr"`
+type PodcastXML struct {
+	XMLName      xml.Name `xml:"rss"`
+	XmlnsAtom    string   `xml:"xmlns:atom,attr"`
+	XmlnsContent string   `xml:"xmlns:content,attr"`
+	XmlnsITunes  string   `xml:"xmlns:itunes,attr"`
+	XmlnsGPlay   string   `xml:"xmlns:googleplay,attr"`
+	XmlnsMedia   string   `xml:"xmlns:media,attr"`
+	Version      string   `xml:"version,attr"`
+	Channel      channel  `xml:"channel"`
 }
 
 type channel struct {

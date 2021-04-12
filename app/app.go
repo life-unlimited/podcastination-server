@@ -5,7 +5,9 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"life-unlimited/podcastination/config"
+	"life-unlimited/podcastination/stores"
 	"life-unlimited/podcastination/tasks"
+	"log"
 	"time"
 )
 
@@ -13,6 +15,14 @@ type App struct {
 	config    config.PodcastinationConfig
 	db        *sql.DB
 	scheduler *tasks.Scheduler
+	Stores    Stores
+}
+
+type Stores struct {
+	Podcasts stores.PodcastStore
+	Owners   stores.OwnerStore
+	Seasons  stores.SeasonStore
+	Episodes stores.EpisodeStore
 }
 
 // NewApp creates a new App.
@@ -30,7 +40,19 @@ func (a *App) Boot() error {
 		panic(fmt.Errorf("could not open db connection: %v", err))
 	}
 	a.db = db
-	defer closeDB(a.db)
+	// Setup stores.
+	a.Stores = Stores{
+		Podcasts: stores.PodcastStore{DB: a.db},
+		Owners:   stores.OwnerStore{DB: a.db},
+		Seasons:  stores.SeasonStore{DB: a.db},
+		Episodes: stores.EpisodeStore{DB: a.db},
+	}
+	// Check database connection.
+	_, err = a.Stores.Podcasts.All()
+	if err != nil {
+		return fmt.Errorf("could not connect to db: %v", err)
+	}
+	log.Println("connection to database established.")
 	// Create scheduler.
 	a.scheduler = tasks.NewScheduler(tasks.SchedulingConfig{
 		PullDir:        a.config.PullDir,
@@ -40,7 +62,23 @@ func (a *App) Boot() error {
 	// Perform integrity check.
 	// TODO: Perform integrity check.
 	// Let's go.
-	a.scheduler.Run()
+	a.scheduler.ScheduleJob(&tasks.ImportJob{
+		PullDir:    a.config.PullDir,
+		PodcastDir: a.config.PodcastDir,
+		Store: tasks.ImportJobStores{
+			Podcasts: a.Stores.Podcasts,
+			Owners:   a.Stores.Owners,
+			Seasons:  a.Stores.Seasons,
+			Episodes: a.Stores.Episodes,
+		},
+	}, true)
+	return nil
+}
+
+func (a *App) Shutdown() error {
+	if a.db != nil {
+		return closeDB(a.db)
+	}
 	return nil
 }
 
@@ -50,8 +88,9 @@ func connectToDB(dataSourceName string) (*sql.DB, error) {
 }
 
 // closeDB closes the database connection.
-func closeDB(db *sql.DB) {
+func closeDB(db *sql.DB) error {
 	if err := db.Close(); err != nil {
-		panic(fmt.Errorf("could not close db connection: %v", err))
+		return fmt.Errorf("could not close db connection: %v", err)
 	}
+	return nil
 }

@@ -133,15 +133,13 @@ func (details *CreationDetails) nested() (nestedCreationDetails, error) {
 // createEmptyPodcastXML creates a new PodcastXML filled with default values.
 func createEmptyPodcastXML() *PodcastXML {
 	return &PodcastXML{
-		RSS: rss{
-			XmlnsAtom:    "http://www.w3.org/2005/Atom",
-			XmlnsContent: "http://purl.org/rss/1.0/modules/content/",
-			XmlnsITunes:  "http://www.itunes.com/dtds/podcast-1.0.dtd",
-			XmlnsGPlay:   "http://www.google.com/schemas/play-podcasts/1.0",
-			XmlnsMedia:   "http://www.rssboard.org/media-rss",
-			Version:      "2.0",
-		},
-		Channel: channel{},
+		XmlnsAtom:    "http://www.w3.org/2005/Atom",
+		XmlnsContent: "http://purl.org/rss/1.0/modules/content/",
+		XmlnsITunes:  "http://www.itunes.com/dtds/podcast-1.0.dtd",
+		XmlnsGPlay:   "http://www.google.com/schemas/play-podcasts/1.0",
+		XmlnsMedia:   "http://www.rssboard.org/media-rss",
+		Version:      "2.0",
+		Channel:      channel{},
 	}
 }
 

@@ -30,7 +30,7 @@ func (s *PodcastStore) All() ([]podcasts.Podcast, error) {
 
 // ById retrieves a podcast from the store with the given id.
 func (s *PodcastStore) ById(id int) (podcasts.Podcast, error) {
-	rows, err := s.DB.Query(fmt.Sprintf("%s where id = #1", podcastSelect), id)
+	rows, err := s.DB.Query(fmt.Sprintf("%s where id = $1", podcastSelect), id)
 	if err != nil {
 		return podcasts.Podcast{}, fmt.Errorf("could not query db for podcast by id %v: %v", id, err)
 	}
@@ -43,7 +43,7 @@ func (s *PodcastStore) ById(id int) (podcasts.Podcast, error) {
 	if len(pcs) != 1 {
 		return podcasts.Podcast{}, fmt.Errorf("get podcast by id from db returned %v results, but wanted 1", len(pcs))
 	}
-	return pcs[1], nil
+	return pcs[0], nil
 }
 
 // ByKey retrieves a podcast from the store with the given key.

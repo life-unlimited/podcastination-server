@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 )
@@ -9,7 +10,13 @@ import (
 type Scheduler struct {
 	config SchedulingConfig
 	db     *sql.DB
-	stop   chan bool
+	stop   chan struct{}
+	jobs   []*job
+}
+
+type job struct {
+	job  *SchedulingJob
+	stop chan struct{}
 }
 
 type SchedulingConfig struct {
@@ -18,8 +25,9 @@ type SchedulingConfig struct {
 	ImportInterval time.Duration
 }
 
-type SchedulingTask interface {
-	run()
+type SchedulingJob interface {
+	name() string
+	run() error
 	importInterval() time.Duration
 }
 
@@ -27,33 +35,47 @@ func NewScheduler(config SchedulingConfig, db *sql.DB) *Scheduler {
 	return &Scheduler{
 		config: config,
 		db:     db,
-		stop:   make(chan bool),
+		stop:   make(chan struct{}),
 	}
 }
 
-func (s *Scheduler) Run() {
-	// Run initial imports.
-	log.Println("Performing initial import...")
-	if err := s.runImports(); err != nil {
-		log.Fatalf("could not run initial import tasks: %v", err)
+// ScheduleJob schedules and runs a SchedulingJob.
+func (s *Scheduler) ScheduleJob(j SchedulingJob, initialRun bool) {
+	newJob := &job{
+		job:  &j,
+		stop: make(chan struct{}),
 	}
-	log.Println("Done.")
-	// TODO: Setup scheduling and interrupt handling.
-	//alive := true
-	//for alive {
-	//	select {
-	//	case <-s.stop:
-	//		alive = false
-	//		break
-	//	case <-time.After(s.config.ImportInterval):
-	//		if err := s.runImports(); err != nil {
-	//			log.Fatalf("could not run import tasks: %v", err)
-	//		}
-	//		break
-	//	}
-	//}
+	s.jobs = append(s.jobs, newJob)
+	// Run.
+	go func(myJob *job) {
+		if initialRun {
+			if err := (*myJob.job).run(); err != nil {
+				log.Printf("%s initial run failed: %v", jobLogPrefix(myJob), err)
+			}
+		}
+		// TODO: Setup scheduling and interrupt handling.
+		//alive := true
+		//for alive {
+		//	select {
+		//	case <-s.stop:
+		//		alive = false
+		//		break
+		//	case <-time.After(s.config.ImportInterval):
+		//		if err := s.runImports(); err != nil {
+		//			log.Fatalf("could not run import tasks: %v", err)
+		//		}
+		//		break
+		//	}
+		//}
+	}(newJob)
 }
 
 func (s *Scheduler) Stop() {
-	s.stop <- true
+	s.stop <- struct{}{}
+	// TODO
+}
+
+func jobLogPrefix(job *job) string {
+	name := (*(*job).job).name()
+	return fmt.Sprintf("[JOB] %s:", name)
 }
