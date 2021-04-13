@@ -9,11 +9,11 @@ import (
 	"life-unlimited/podcastination/podcast_xml"
 	"life-unlimited/podcastination/podcasts"
 	"life-unlimited/podcastination/stores"
+	"life-unlimited/podcastination/transfer"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -170,7 +170,8 @@ func (job *ImportJob) refreshPodcastXML(podcastId int) error {
 		return fmt.Errorf("could not marshal podcast xml: %v", err)
 	}
 	// Write podcast xml.
-	podcastXMLFilePath := filepath.Join(job.PodcastDir, getPodcastFolderName(podcastId), PodcastXMLDetailsFileName)
+	podcastXMLFilePath := filepath.Join(job.PodcastDir, transfer.GetPodcastFolderName(podcastId),
+		PodcastXMLDetailsFileName)
 	err = ioutil.WriteFile(podcastXMLFilePath, output, 0633)
 	if err != nil {
 		return fmt.Errorf("could not write podcast xml: %v", err)
@@ -322,9 +323,9 @@ func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, erro
 		return podcast, fmt.Errorf("could not insert episode into db: %v", err)
 	}
 	// Get new file locations.
-	fileLocations := getEpisodeFileLocations(episode, podcast.Id)
-	episode.MP3Location = fileLocations.mp3FullPath()
-	episode.ImageLocation = fileLocations.imageFullPath()
+	fileLocations := transfer.GetEpisodeFileLocations(episode, podcast.Id)
+	episode.MP3Location = fileLocations.MP3FullPath()
+	episode.ImageLocation = fileLocations.ImageFullPath()
 	// Transfer the files.
 	err = job.performFileTransfer(episode, task, fileLocations)
 	if err != nil {
@@ -362,50 +363,12 @@ func validateMP3(file string) (int, error) {
 	return audioLength, nil
 }
 
-type episodeFileLocations struct {
-	baseDir       string
-	mp3FileName   string
-	imageFileName string
-}
-
-func getEpisodeFileLocations(episode podcasts.Episode, podcastId int) episodeFileLocations {
-	folderName := getEpisodeFolderName(episode, podcastId)
-	cleanTitle := filepath.Clean(episode.Title)
-	loc := episodeFileLocations{
-		baseDir:       folderName,
-		mp3FileName:   fmt.Sprintf("%d_%s.mp3", episode.Id, strings.Replace(cleanTitle, " ", "_", -1)),
-		imageFileName: fmt.Sprintf("thumb.png"),
-	}
-	return loc
-}
-
-func (loc episodeFileLocations) mp3FullPath() string {
-	return filepath.Join(loc.baseDir, loc.mp3FileName)
-}
-
-func (loc episodeFileLocations) imageFullPath() string {
-	if loc.imageFileName == "" {
-		return ""
-	}
-	return filepath.Join(loc.baseDir, loc.imageFileName)
-}
-
-// getEpisodeFolderName returns the folder name created from the given episode.
-func getEpisodeFolderName(episode podcasts.Episode, podcastId int) string {
-	timestamp := episode.Date.Format("20060102_150405")
-	return filepath.Join(getPodcastFolderName(podcastId), fmt.Sprintf("%s_%d", timestamp, episode.Id))
-}
-
-func getPodcastFolderName(podcastId int) string {
-	return strconv.Itoa(podcastId)
-}
-
 // performFileTransfer transfers all episode related files to the given destination. This also deletes the task
 // file.
 func (job *ImportJob) performFileTransfer(episode podcasts.Episode, task ImportTask,
-	fileLocations episodeFileLocations) error {
+	fileLocations transfer.EpisodeFileLocations) error {
 	// Create target directory.
-	err := os.MkdirAll(filepath.Join(job.PodcastDir, fileLocations.baseDir), 0744) // Create with read-write read read.
+	err := os.MkdirAll(filepath.Join(job.PodcastDir, fileLocations.BaseDir), 0744) // Create with read-write read read.
 	if err != nil {
 		return fmt.Errorf("could not create episode directory: %v", err)
 	}
