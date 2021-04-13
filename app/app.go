@@ -12,10 +12,11 @@ import (
 )
 
 type App struct {
-	config    config.PodcastinationConfig
-	db        *sql.DB
-	scheduler *tasks.Scheduler
-	Stores    Stores
+	config           config.PodcastinationConfig
+	db               *sql.DB
+	scheduler        *tasks.Scheduler
+	staticFileServer *StaticFileServer
+	Stores           Stores
 }
 
 type Stores struct {
@@ -72,12 +73,24 @@ func (a *App) Boot() error {
 			Episodes: a.Stores.Episodes,
 		},
 	}, true)
+	// Start web server.
+	a.staticFileServer = NewStaticFileServer(StaticFileServerConfig{
+		StaticDir: a.config.PodcastDir,
+		Addr:      a.config.ServerAddr,
+	})
+	err = a.staticFileServer.Start()
+	if err != nil {
+		log.Fatalf("could not start static file server: %v", err)
+	}
 	return nil
 }
 
 // Shutdown shuts down the app.
 func (a *App) Shutdown() error {
 	a.scheduler.Stop()
+	if err := a.staticFileServer.Stop(); err != nil {
+		return fmt.Errorf("stop static file server: %v", err)
+	}
 	if a.db != nil {
 		return closeDB(a.db)
 	}
