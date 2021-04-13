@@ -67,6 +67,7 @@ func (s *Scheduler) ScheduleJob(j SchedulingJob, initialRun bool) {
 			}
 		}
 	}(newJob)
+	log.Printf("scheduled job %s (every %v, initial run: %v)", j.name(), j.interval(), initialRun)
 }
 
 // Stop stops all registered jobs.

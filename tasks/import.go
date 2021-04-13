@@ -24,9 +24,10 @@ const PodcastXMLDetailsFileName = "podcast.xml"
 
 // ImportJob is the task that is scheduled.
 type ImportJob struct {
-	PullDir    string
-	PodcastDir string
-	Store      ImportJobStores
+	PullDir        string
+	PodcastDir     string
+	ImportInterval time.Duration
+	Store          ImportJobStores
 }
 
 type ImportJobStores struct {
@@ -91,7 +92,7 @@ func (task *ImportTaskDetails) IsValid() (bool, error) {
 }
 
 func (job *ImportJob) interval() time.Duration {
-	return 15 * time.Minute
+	return job.ImportInterval
 }
 
 func (job *ImportJob) name() string {

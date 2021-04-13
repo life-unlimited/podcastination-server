@@ -64,8 +64,9 @@ func (a *App) Boot() error {
 	// TODO: Perform integrity check.
 	// Let's go.
 	a.scheduler.ScheduleJob(&tasks.ImportJob{
-		PullDir:    a.config.PullDir,
-		PodcastDir: a.config.PodcastDir,
+		PullDir:        a.config.PullDir,
+		PodcastDir:     a.config.PodcastDir,
+		ImportInterval: time.Duration(a.config.ImportInterval) * time.Minute,
 		Store: tasks.ImportJobStores{
 			Podcasts: a.Stores.Podcasts,
 			Owners:   a.Stores.Owners,
