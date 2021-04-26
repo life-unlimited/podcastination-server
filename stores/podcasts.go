@@ -81,7 +81,7 @@ func parseRowsAsPodcasts(rows *sql.Rows) ([]podcasts.Podcast, error) {
 		feedLink      string
 	)
 
-	var pcs []podcasts.Podcast
+	pcs := make([]podcasts.Podcast, 0)
 	for rows.Next() {
 		err := rows.Scan(&id, &title, &subtitle, &language, &ownerId, &description, &keywords, &link, &imageLocation,
 			&podcastType, &key, &feedLink)

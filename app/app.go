@@ -7,23 +7,17 @@ import (
 	"life-unlimited/podcastination/config"
 	"life-unlimited/podcastination/stores"
 	"life-unlimited/podcastination/tasks"
+	"life-unlimited/podcastination/web_server"
 	"log"
 	"time"
 )
 
 type App struct {
-	config           config.PodcastinationConfig
-	db               *sql.DB
-	scheduler        *tasks.Scheduler
-	staticFileServer *StaticFileServer
-	Stores           Stores
-}
-
-type Stores struct {
-	Podcasts stores.PodcastStore
-	Owners   stores.OwnerStore
-	Seasons  stores.SeasonStore
-	Episodes stores.EpisodeStore
+	config    config.PodcastinationConfig
+	db        *sql.DB
+	scheduler *tasks.Scheduler
+	webServer *web_server.WebServer
+	Stores    stores.Stores
 }
 
 // NewApp creates a new App.
@@ -41,8 +35,8 @@ func (a *App) Boot() error {
 		panic(fmt.Errorf("could not open db connection: %v", err))
 	}
 	a.db = db
-	// Setup stores.
-	a.Stores = Stores{
+	// Setup stores.Stores.
+	a.Stores = stores.Stores{
 		Podcasts: stores.PodcastStore{DB: a.db},
 		Owners:   stores.OwnerStore{DB: a.db},
 		Seasons:  stores.SeasonStore{DB: a.db},
@@ -74,14 +68,14 @@ func (a *App) Boot() error {
 			Episodes: a.Stores.Episodes,
 		},
 	}, true)
-	// Start web server.
-	a.staticFileServer = NewStaticFileServer(StaticFileServerConfig{
+	// Start web web_server.
+	a.webServer = web_server.NewServer(web_server.Config{
 		StaticDir: a.config.PodcastDir,
 		Addr:      a.config.ServerAddr,
-	})
-	err = a.staticFileServer.Start()
+	}, &a.Stores)
+	err = a.webServer.Start()
 	if err != nil {
-		log.Fatalf("could not start static file server: %v", err)
+		log.Fatalf("could not start web server: %v", err)
 	}
 	return nil
 }
@@ -89,8 +83,8 @@ func (a *App) Boot() error {
 // Shutdown shuts down the app.
 func (a *App) Shutdown() error {
 	a.scheduler.Stop()
-	if err := a.staticFileServer.Stop(); err != nil {
-		return fmt.Errorf("stop static file server: %v", err)
+	if err := a.webServer.Stop(); err != nil {
+		return fmt.Errorf("stop web server: %v", err)
 	}
 	if a.db != nil {
 		return closeDB(a.db)

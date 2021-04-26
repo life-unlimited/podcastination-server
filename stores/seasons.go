@@ -92,7 +92,7 @@ func parseRowsAsSeasons(rows *sql.Rows) ([]podcasts.Season, error) {
 		key           sql.NullString
 	)
 
-	var seasons []podcasts.Season
+	seasons := make([]podcasts.Season, 0)
 	for rows.Next() {
 		err := rows.Scan(&id, &title, &subtitle, &description, &imageLocation, &podcastId, &num, &key)
 		if err != nil {

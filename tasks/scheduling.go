@@ -56,7 +56,7 @@ func (s *Scheduler) ScheduleJob(j SchedulingJob, initialRun bool) {
 		alive := true
 		for alive {
 			select {
-			case <-s.stop:
+			case <-newJob.stop:
 				alive = false
 				break
 			case <-time.After(j.interval()):
@@ -72,7 +72,9 @@ func (s *Scheduler) ScheduleJob(j SchedulingJob, initialRun bool) {
 
 // Stop stops all registered jobs.
 func (s *Scheduler) Stop() {
+	totalJobCount := len(s.jobs)
 	for _, j := range s.jobs {
+		log.Printf("scheduler stopping %d/%d jobs...", len(s.jobs), totalJobCount)
 		j.stop <- struct{}{}
 	}
 }

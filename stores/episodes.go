@@ -95,7 +95,7 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 		isAvailable   bool
 	)
 
-	var episodes []podcasts.Episode
+	episodes := make([]podcasts.Episode, 0)
 	for rows.Next() {
 		err := rows.Scan(&id, &title, &subtitle, &date, &author, &description, &mp3Location, &seasonId, &num,
 			&imageLocation, &ytURL, &mp3Length, &isAvailable)

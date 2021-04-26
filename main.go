@@ -30,11 +30,12 @@ func main() {
 	log.Println("up and running!")
 	// Await term signal.
 	awaitTerminateSignal()
+	log.Println("shutting down...")
 	// Shutdown
 	if err := podcastination.Shutdown(); err != nil {
 		log.Printf("could not shutdown podcastination: %v", err)
 	}
-	log.Println("Good bye!")
+	log.Println("good bye!")
 }
 
 func awaitTerminateSignal() {

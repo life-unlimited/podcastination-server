@@ -54,7 +54,7 @@ func parseRowsAsOwners(rows *sql.Rows) ([]podcasts.Owner, error) {
 		copyright sql.NullString
 	)
 
-	var owners []podcasts.Owner
+	owners := make([]podcasts.Owner, 0)
 	for rows.Next() {
 		err := rows.Scan(&id, &name, &email, &copyright)
 		if err != nil {

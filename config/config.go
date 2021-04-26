@@ -17,7 +17,7 @@ type PodcastinationConfig struct {
 	PodcastDir string `json:"podcast_dir"`
 	// ImportInterval defines the duration in minutes after import tasks are retrieved.
 	ImportInterval int `json:"import_interval"`
-	// ServerAddr is the address the static file server will listen on (for example 127.0.0.1:8000).
+	// ServerAddr is the address the static file web_server will listen on (for example 127.0.0.1:8000).
 	ServerAddr string `json:"server_addr"`
 }
 
