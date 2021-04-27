@@ -6,6 +6,7 @@ stages:
 test:
   image: golang:1.14
   stage: test
+  allow_failure: false
   script:
     - go test ./...
     - go vet ./...
@@ -13,6 +14,7 @@ test:
 build:
   image: golang:1.14
   stage: build
+  allow_failure: false
   script:
     - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/podcastination-server
   artifacts:
@@ -21,5 +23,20 @@ build:
 
 deploy:
   stage: deploy
+  image: alpine
+  needs:
+    - job: build
+      artifacts: true
+  allow_failure: false
   script:
-    - echo "Hello World!"
+    - apk add --no-cache rsync openssh
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" >> ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - rsync -rav -e 'ssh -p 44' --progress --delete podcastination-server gitlab@lu-church.de:/opt/podcastination-server/podcastination-server
+  tags:
+    - docker
+  only:
+    - master
+    - develop # TODO REMOVE ME
