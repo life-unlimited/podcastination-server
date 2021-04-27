@@ -26,6 +26,8 @@ format:
     - go fmt $(go list ./... | grep -v /vendor/)
     - go vet $(go list ./... | grep -v /vendor/)
     - go test -race $(go list ./... | grep -v /vendor/)
+  tags:
+    - docker
 
 compile:
   stage: build
@@ -34,3 +36,5 @@ compile:
   artifacts:
     paths:
       - mybinary
+  tags:
+    - docker
