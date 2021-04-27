@@ -14,10 +14,10 @@ build:
   image: golang:1.14
   stage: build
   script:
-    - go build -o ./bin/podcastination-server ./cmd/podcastination-server
+    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/podcastination-server
   artifacts:
     paths:
-      - bin/
+      - podcastination-server
 
 deploy:
   stage: deploy
