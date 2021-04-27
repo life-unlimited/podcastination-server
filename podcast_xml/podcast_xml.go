@@ -2,7 +2,7 @@ package podcast_xml
 
 import (
 	"fmt"
-	"life-unlimited/podcastination/podcasts"
+	"life-unlimited/podcastination-server/podcasts"
 	"sort"
 	"strconv"
 	"strings"

@@ -3,7 +3,7 @@ package stores
 import (
 	"database/sql"
 	"fmt"
-	"life-unlimited/podcastination/podcasts"
+	"life-unlimited/podcastination-server/podcasts"
 )
 
 const seasonSelect = "select s.id, s.title, s.subtitle, s.description, s.image_location, s.podcast_id, s.num, s.key from seasons as s"

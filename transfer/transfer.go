@@ -2,7 +2,7 @@ package transfer
 
 import (
 	"fmt"
-	"life-unlimited/podcastination/podcasts"
+	"life-unlimited/podcastination-server/podcasts"
 	"path/filepath"
 	"strconv"
 	"strings"
