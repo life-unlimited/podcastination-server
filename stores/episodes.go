@@ -3,7 +3,7 @@ package stores
 import (
 	"database/sql"
 	"fmt"
-	"life-unlimited/podcastination/podcasts"
+	"life-unlimited/podcastination-server/podcasts"
 	"time"
 )
 
