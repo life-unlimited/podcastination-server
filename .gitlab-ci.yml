@@ -39,4 +39,3 @@ deploy:
     - docker
   only:
     - master
-    - develop # TODO REMOVE ME
