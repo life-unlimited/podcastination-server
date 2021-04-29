@@ -45,12 +45,12 @@ func (s *WebServer) Start() error {
 func (s *WebServer) run() {
 	r := mux.NewRouter()
 	// Enable CORS.
-	r.Use(cors)
+	r.Use(middleware)
 
 	// Static file handling.
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(s.config.StaticDir))))
 	// Not found handler with cors.
-	r.NotFoundHandler = cors(http.NotFoundHandler())
+	r.NotFoundHandler = middleware(http.NotFoundHandler())
 
 	s.populateRESTRoutes(r)
 
@@ -75,15 +75,17 @@ func (s *WebServer) run() {
 	}
 }
 
-// cors activates cross site stuff.
+// middleware activates cross site stuff and avoids caching.
 //
-// Taken from https://asanchez.dev/blog/cors-golang-options/.
-func cors(next http.Handler) http.Handler {
+// Cors stuff taken from https://asanchez.dev/blog/cors-golang-options/.
+func middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set headers.
 		w.Header().Set("Access-Control-Allow-Headers", "*")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "*")
+		// Avoid caching.
+		w.Header().Set("Cache-Control", "max-age=0, no-cache, must-revalidate, proxy-revalidate")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
