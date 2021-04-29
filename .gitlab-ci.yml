@@ -34,7 +34,8 @@ deploy:
     - echo "$SSH_PRIVATE_KEY" >> ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - rsync -rav -e 'ssh -p 44' --progress --delete podcastination-server gitlab@lu-church.de:/opt/podcastination-server/podcastination-server/bin
+    - rsync -rav -e 'ssh -p 44' --progress --delete podcastination-server gitlab@lu-church.de:/opt/podcastination-server/bin
+    - ssh gitlab@lu-church.de -p 44 "systemctl restart podcastination-server.service"
   tags:
     - docker
   only:
