@@ -10,6 +10,9 @@ test:
   script:
     - go test ./...
     - go vet ./...
+  only:
+    - master
+    - develop
 
 build:
   image: golang:1.14
@@ -20,6 +23,9 @@ build:
   artifacts:
     paths:
       - podcastination-server
+  only:
+    - master
+    - develop
 
 deploy:
   stage: deploy
