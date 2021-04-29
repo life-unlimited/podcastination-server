@@ -376,7 +376,7 @@ func (job *ImportJob) performFileTransfer(episode podcasts.Episode, task ImportT
 	// Move the files.
 	// Move the mp3.
 	mp3Destination := filepath.Join(job.PodcastDir, episode.MP3Location)
-	err = os.Rename(filepath.Join(task.BaseDir, task.Details.MP3FileName), mp3Destination)
+	err = transfer.MoveFile(filepath.Join(task.BaseDir, task.Details.MP3FileName), mp3Destination)
 	if err != nil {
 		return fmt.Errorf("could not move mp3 to final destination: %v", err)
 	}
@@ -385,7 +385,7 @@ func (job *ImportJob) performFileTransfer(episode podcasts.Episode, task ImportT
 	_, err = os.Stat(imageSource)
 	if err == nil {
 		imageDestination := filepath.Join(job.PodcastDir, episode.ImageLocation)
-		err = os.Rename(imageSource, imageDestination)
+		err = transfer.MoveFile(imageSource, imageDestination)
 		if err != nil {
 			return fmt.Errorf("could not move image to final destination: %v", err)
 		}
