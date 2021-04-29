@@ -51,7 +51,7 @@ type ImportTaskDetails struct {
 	// Title is the title of the episode.
 	Title string `json:"title"`
 	// Subtitle is the subtitle for the episode.
-	Subtitle string `json:"sub_title"`
+	Subtitle string `json:"subtitle"`
 	// Date is the creation date for the episode. This is also used in order to sort tasks for applying the right episode order.
 	Date time.Time `json:"date"`
 	// Author is the author of episode. If none provided, 'Unknown' will be used.
