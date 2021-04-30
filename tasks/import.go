@@ -232,8 +232,7 @@ func getImportTasks(dir string) ([]ImportTask, error) {
 	}
 	// Sort by date ascending.
 	sort.Slice(importTasks, func(i, j int) bool {
-		// TODO: Test this.
-		return importTasks[i].Details.Date.After(importTasks[j].Details.Date)
+		return importTasks[i].Details.Date.Before(importTasks[j].Details.Date)
 	})
 	return importTasks, nil
 }
