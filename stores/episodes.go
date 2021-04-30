@@ -31,7 +31,7 @@ func (s *EpisodeStore) All() ([]podcasts.Episode, error) {
 
 // ByPodcast retrieves all episodes from the store that belong to the given podcast.
 func (s *EpisodeStore) ByPodcast(podcastId int) ([]podcasts.Episode, error) {
-	rows, err := s.DB.Query(fmt.Sprintf("%s join seasons on e.season_id = seasons.id where seasons.podcast_id = $1", episodeSelect), podcastId)
+	rows, err := s.DB.Query(fmt.Sprintf("%s join seasons on e.season_id = seasons.id where seasons.podcast_id = $1 order by seasons.num desc, e.num desc;", episodeSelect), podcastId)
 	if err != nil {
 		return nil, fmt.Errorf("could not query db for episodes by podcast: %v", err)
 	}
@@ -46,7 +46,7 @@ func (s *EpisodeStore) ByPodcast(podcastId int) ([]podcasts.Episode, error) {
 
 // BySeason retrieves all episodes from the store that belong to the given season.
 func (s *EpisodeStore) BySeason(seasonId int) ([]podcasts.Episode, error) {
-	rows, err := s.DB.Query(fmt.Sprintf("%s where season_id = $1", episodeSelect), seasonId)
+	rows, err := s.DB.Query(fmt.Sprintf("%s where season_id = $1 order by num desc;", episodeSelect), seasonId)
 	if err != nil {
 		return nil, fmt.Errorf("could not query db for episodes by season: %v", err)
 	}
