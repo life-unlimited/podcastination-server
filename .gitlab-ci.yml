@@ -23,6 +23,7 @@ build:
   artifacts:
     paths:
       - podcastination-server
+    expire_in: 7 days
   only:
     - master
     - develop

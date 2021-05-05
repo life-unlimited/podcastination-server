@@ -12,7 +12,8 @@ import (
 func (s *WebServer) populateRESTRoutes(r *mux.Router) {
 	r.HandleFunc("/seasons/{id:[0-9]+}", s.getSeasonByIdHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/seasons/{seasonId:[0-9]+}/episodes", s.getEpisodesOfSeason).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/podcasts/by-key/{key}", s.getPodcastByKeyHandler).Methods(http.MethodGet, http.MethodOptions, http.MethodOptions)
+	r.HandleFunc("/podcasts/by-key/{key}", s.getPodcastByKeyHandler).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/podcasts", s.getPodcastsHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/podcasts/{podcastId:[0-9]+}/seasons/last", s.getLastSeasonOfPodcastHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/podcasts/{podcastId:[0-9]+}/seasons/{seasonNum:[0-9]+}", s.getLastSeasonOfPodcastHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/podcasts/{podcastId:[0-9]+}/seasons", s.getSeasonsOfPodcastHandler).Methods(http.MethodGet, http.MethodOptions)
@@ -72,6 +73,16 @@ func (s *WebServer) getPodcastByKeyHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	writeJSON(w, podcast)
+}
+
+// getPodcastsHandler retrieves all podcasts.
+func (s *WebServer) getPodcastsHandler(w http.ResponseWriter, _ *http.Request) {
+	podcasts, err := s.stores.Podcasts.All()
+	if err != nil {
+		writeString(w, http.StatusInternalServerError, "could not retrieve podcasts")
+		return
+	}
+	writeJSON(w, podcasts)
 }
 
 // getSeasonOfPodcastHandler retrieves a season in a podcast by it's number.
