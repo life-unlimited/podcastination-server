@@ -13,6 +13,7 @@ func (s *WebServer) populateRESTRoutes(r *mux.Router) {
 	r.HandleFunc("/seasons/{id:[0-9]+}", s.getSeasonByIdHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/seasons/{seasonId:[0-9]+}/episodes", s.getEpisodesOfSeason).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/podcasts/by-key/{key}", s.getPodcastByKeyHandler).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/podcasts/{id}", s.getPodcastByIdHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/podcasts", s.getPodcastsHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/podcasts/{podcastId:[0-9]+}/seasons/last", s.getLastSeasonOfPodcastHandler).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/podcasts/{podcastId:[0-9]+}/seasons/{seasonNum:[0-9]+}", s.getLastSeasonOfPodcastHandler).Methods(http.MethodGet, http.MethodOptions)
@@ -58,6 +59,26 @@ func (s *WebServer) getLastSeasonOfPodcastHandler(w http.ResponseWriter, r *http
 		}
 	}
 	writeJSON(w, season)
+}
+
+// getPodcastByIdHandler retrieves a podcast by the given podcast id.
+func (s *WebServer) getPodcastByIdHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := mux.Vars(r)["id"]
+	if idStr == "" {
+		writeString(w, http.StatusBadRequest, "id was empty")
+		return
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		writeString(w, http.StatusBadRequest, "id was not numeric")
+		return
+	}
+	podcast, err := s.stores.Podcasts.ById(id)
+	if err != nil {
+		writeString(w, http.StatusNotFound, "could not retrieve podcast")
+		return
+	}
+	writeJSON(w, podcast)
 }
 
 // getPodcastByKeyHandler retrieves a podcast by a given key.
