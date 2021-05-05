@@ -13,6 +13,8 @@ test:
   only:
     - master
     - develop
+  tags:
+    - docker
 
 build:
   image: golang:1.14
@@ -27,6 +29,8 @@ build:
   only:
     - master
     - develop
+  tags:
+    - docker
 
 deploy:
   stage: deploy
