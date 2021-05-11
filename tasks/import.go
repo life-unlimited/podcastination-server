@@ -92,7 +92,7 @@ func (task *ImportTaskDetails) IsValid() (bool, error) {
 	}
 	// Assure that he pdf file is pdf.
 	pdf := task.PDFFileName
-	if pdf != "" && !strings.HasSuffix(img, ".pdf") {
+	if pdf != "" && !strings.HasSuffix(pdf, ".pdf") {
 		return false, fmt.Errorf("pdf file format must be .pdf")
 	}
 	return true, nil
