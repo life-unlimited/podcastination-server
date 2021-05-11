@@ -11,9 +11,6 @@ test:
   script:
     - go test ./...
     - go vet ./...
-  only:
-    - master
-    - develop
   tags:
     - docker
 
