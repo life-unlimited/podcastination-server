@@ -1,3 +1,10 @@
+## [1.0.1](https://gitlab.com/life-unlimited/podcastination-server/compare/v1.0.0...v1.0.1) (2021-05-11)
+
+
+### Bug Fixes
+
+* fixed broken pdf file extension check for import job ([cd0c933](https://gitlab.com/life-unlimited/podcastination-server/commit/cd0c933cd3b341478ade3704441abf4871f91a47))
+
 # 1.0.0 (2021-05-11)
 
 
