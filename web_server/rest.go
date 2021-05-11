@@ -30,6 +30,7 @@ func (s *WebServer) getSeasonByIdHandler(w http.ResponseWriter, r *http.Request)
 	season, err := s.stores.Seasons.ById(id)
 	if err != nil {
 		writeString(w, http.StatusInternalServerError, "could not load seasons")
+		log.Printf("error while retrieving seasons: %v", err)
 		return
 	}
 	writeJSON(w, season)
@@ -44,7 +45,8 @@ func (s *WebServer) getLastSeasonOfPodcastHandler(w http.ResponseWriter, r *http
 	}
 	seasons, err := s.stores.Seasons.ByPodcast(podcastId)
 	if err != nil {
-		writeString(w, http.StatusInternalServerError, "could not load seasons of podcast")
+		writeString(w, http.StatusInternalServerError, "could not retrieve seasons by podcast")
+		log.Printf("error while retrieving seasons by podcast %d: %v", podcastId, err)
 		return
 	}
 	if len(seasons) == 0 {
@@ -101,6 +103,7 @@ func (s *WebServer) getPodcastsHandler(w http.ResponseWriter, _ *http.Request) {
 	podcasts, err := s.stores.Podcasts.All()
 	if err != nil {
 		writeString(w, http.StatusInternalServerError, "could not retrieve podcasts")
+		log.Printf("error while retrieving podcasts: %v", err)
 		return
 	}
 	writeJSON(w, podcasts)
@@ -122,6 +125,7 @@ func (s *WebServer) getSeasonOfPodcastHandler(w http.ResponseWriter, r *http.Req
 	seasons, err := s.stores.Seasons.ByPodcast(podcastId)
 	if err != nil {
 		writeString(w, http.StatusInternalServerError, "could not retrieve seasons")
+		log.Printf("error while retrieving seasons: %v", err)
 		return
 	}
 	if len(seasons) == 0 {
@@ -149,6 +153,7 @@ func (s *WebServer) getEpisodesOfSeason(w http.ResponseWriter, r *http.Request) 
 	episodes, err := s.stores.Episodes.BySeason(seasonId)
 	if err != nil {
 		writeString(w, http.StatusInternalServerError, "could not retrieve episodes for given season")
+		log.Printf("error while retrieving episodes by season %d: %v", seasonId, err)
 		return
 	}
 	writeJSON(w, episodes)
@@ -164,6 +169,7 @@ func (s *WebServer) getSeasonsOfPodcastHandler(w http.ResponseWriter, r *http.Re
 	seasons, err := s.stores.Seasons.ByPodcast(podcastId)
 	if err != nil {
 		writeString(w, http.StatusInternalServerError, "could not retrieve seasons for given podcast")
+		log.Printf("error while retrieving seasons by podcast %d: %v", podcastId, err)
 		return
 	}
 	writeJSON(w, seasons)
