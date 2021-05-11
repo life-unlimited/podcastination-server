@@ -1,5 +1,6 @@
 stages:
   - test
+  - release
   - build
   - deploy
 
@@ -16,10 +17,27 @@ test:
   tags:
     - docker
 
+release:
+  stage: release
+  image: node:13
+  needs:
+    - job: test
+  allow_failure: false
+  before_script:
+    - npm install @semantic-release/changelog @semantic-release/git @semantic-release/gitlab
+  script:
+    - npx semantic-release
+  tags:
+    - docker
+  only:
+    - master
+
 build:
   image: golang:1.14
   stage: build
   allow_failure: false
+  needs:
+    - release
   script:
     - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/podcastination-server
   artifacts:
@@ -28,7 +46,6 @@ build:
     expire_in: 7 days
   only:
     - master
-    - develop
   tags:
     - docker
 
