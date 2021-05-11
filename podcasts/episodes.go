@@ -10,6 +10,7 @@ type Episode struct {
 	Author        string    `json:"author"`
 	Description   string    `json:"description"`
 	ImageLocation string    `json:"image_location"`
+	PDFLocation   string    `json:"pdf_location"`
 	MP3Location   string    `json:"mp3_location"`
 	MP3Length     int       `json:"mp3_length"`
 	SeasonId      int       `json:"season_id"`
