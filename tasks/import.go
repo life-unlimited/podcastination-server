@@ -62,6 +62,8 @@ type ImportTaskDetails struct {
 	MP3FileName string `json:"mp3_file"`
 	// ImageFileName is the file name of an optional episode image.
 	ImageFileName string `json:"image_file"`
+	// PDFFileName is the file name of an optional pdf file.
+	PDFFileName string `json:"pdf_file"`
 	// YouTubeURL is the optional url to an youtube video.
 	YouTubeURL string `json:"yt_url"`
 }
@@ -83,10 +85,15 @@ func (task *ImportTaskDetails) IsValid() (bool, error) {
 	if len(task.MP3FileName) == 0 {
 		return false, fmt.Errorf("no mp3 file name provided")
 	}
-	// Assure that the image file is png
+	// Assure that the image file is png.
 	img := task.ImageFileName
 	if img != "" && !strings.HasSuffix(img, ".png") {
 		return false, fmt.Errorf("image file format must be .png")
+	}
+	// Assure that he pdf file is pdf.
+	pdf := task.PDFFileName
+	if pdf != "" && !strings.HasSuffix(img, ".pdf") {
+		return false, fmt.Errorf("pdf file format must be .pdf")
 	}
 	return true, nil
 }
@@ -326,6 +333,7 @@ func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, erro
 	fileLocations := transfer.GetEpisodeFileLocations(episode, podcast.Id)
 	episode.MP3Location = fileLocations.MP3FullPath()
 	episode.ImageLocation = fileLocations.ImageFullPath()
+	episode.PDFLocation = fileLocations.PDFFullPath()
 	// Transfer the files.
 	err = job.performFileTransfer(episode, task, fileLocations)
 	if err != nil {
@@ -388,6 +396,18 @@ func (job *ImportJob) performFileTransfer(episode podcasts.Episode, task ImportT
 			err = transfer.MoveFile(imageSource, imageDestination)
 			if err != nil {
 				return fmt.Errorf("could not move image to final destination: %v", err)
+			}
+		}
+	}
+	// Move the pdf if existing.
+	if task.Details.PDFFileName != "" {
+		pdfSource := filepath.Join(task.BaseDir, task.Details.PDFFileName)
+		_, err = os.Stat(pdfSource)
+		if err == nil {
+			pdfDestination := filepath.Join(job.PodcastDir, episode.PDFLocation)
+			err = transfer.MoveFile(pdfSource, pdfDestination)
+			if err != nil {
+				return fmt.Errorf("could not move pdf to final destination: %v", err)
 			}
 		}
 	}

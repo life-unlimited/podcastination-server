@@ -14,6 +14,7 @@ type EpisodeFileLocations struct {
 	BaseDir       string
 	MP3FileName   string
 	ImageFileName string
+	PDFFileName   string
 }
 
 // GetEpisodeFileLocations returns the file locations for the given episode and podcast.
@@ -24,6 +25,7 @@ func GetEpisodeFileLocations(episode podcasts.Episode, podcastId int) EpisodeFil
 		BaseDir:       folderName,
 		MP3FileName:   fmt.Sprintf("%d_%s.mp3", episode.Id, cleanTitle),
 		ImageFileName: fmt.Sprintf("thumb.png"),
+		PDFFileName:   fmt.Sprintf("%d_%s.pdf", episode.Id, cleanTitle),
 	}
 	return loc
 }
@@ -52,6 +54,13 @@ func (loc EpisodeFileLocations) ImageFullPath() string {
 		return ""
 	}
 	return filepath.Join(loc.BaseDir, loc.ImageFileName)
+}
+
+func (loc EpisodeFileLocations) PDFFullPath() string {
+	if loc.PDFFileName == "" {
+		return ""
+	}
+	return filepath.Join(loc.BaseDir, loc.PDFFileName)
 }
 
 // GetEpisodeFolderName returns the folder name created from the given episode.
