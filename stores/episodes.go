@@ -8,7 +8,7 @@ import (
 )
 
 const episodeSelect = `select e.id, e.title, e.subtitle, e.date, e.author, e.description, e.mp3_location, e.season_id, 
-       e.num, e.image_location, e.yt_url, e.mp3_length, e.is_available from episodes as e`
+       e.num, e.image_location, e.yt_url, e.mp3_length, e.is_available, e.pdf_location from episodes as e`
 
 type EpisodeStore struct {
 	DB *sql.DB
@@ -93,6 +93,7 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 		imageLocation sql.NullString
 		ytURL         sql.NullString
 		isAvailable   bool
+		pdfLocation   sql.NullString
 	)
 
 	episodes := make([]podcasts.Episode, 0)
@@ -110,6 +111,7 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 			Author:        author.String,
 			Description:   description.String,
 			ImageLocation: imageLocation.String,
+			PDFLocation:   pdfLocation.String,
 			MP3Location:   mp3Location.String,
 			YouTubeURL:    ytURL.String,
 			SeasonId:      seasonId,
@@ -122,15 +124,15 @@ func parseRowsAsEpisodes(rows *sql.Rows) ([]podcasts.Episode, error) {
 }
 
 const episodeInsert = `INSERT INTO episodes (title, subtitle, date, author, description, mp3_location, season_id, num,
-                      image_location, yt_url, mp3_length, is_available)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                      image_location, yt_url, mp3_length, is_available, pdf_location)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 RETURNING id`
 
 // Create inserts a new episode into db and returns the episode with the assigned id.
 func (s *EpisodeStore) Create(e podcasts.Episode) (podcasts.Episode, error) {
 	var id int
 	err := s.DB.QueryRow(episodeInsert, e.Title, e.Subtitle, e.Date, e.Author, e.Description, e.MP3Location, e.SeasonId,
-		e.Num, e.ImageLocation, e.YouTubeURL, e.MP3Length, e.IsAvailable).Scan(&id)
+		e.Num, e.ImageLocation, e.YouTubeURL, e.MP3Length, e.IsAvailable, e.PDFLocation).Scan(&id)
 	if err != nil {
 		return podcasts.Episode{}, fmt.Errorf("could not insert episode into db: %v", err)
 	}
@@ -141,15 +143,15 @@ func (s *EpisodeStore) Create(e podcasts.Episode) (podcasts.Episode, error) {
 
 const episodeUpdate = `UPDATE episodes
 SET title=$1, subtitle=$2, date=$3, author=$4, description=$5, mp3_location=$6, season_id=$7, num=$8,
-    image_location=$9, yt_url=$10, mp3_length=$11, is_available=$12
-WHERE id=$13
+    image_location=$9, yt_url=$10, mp3_length=$11, is_available=$12, pdf_location=$13
+WHERE id=$14
 RETURNING id`
 
 // Update updates an episode in the db based on its id.
 func (s *EpisodeStore) Update(e podcasts.Episode) error {
 	id := -1
 	err := s.DB.QueryRow(episodeUpdate, e.Title, e.Subtitle, e.Date, e.Author, e.Description, e.MP3Location, e.SeasonId,
-		e.Num, e.ImageLocation, e.YouTubeURL, e.MP3Length, e.IsAvailable, e.Id).Scan(&id)
+		e.Num, e.ImageLocation, e.YouTubeURL, e.MP3Length, e.IsAvailable, e.PDFLocation, e.Id).Scan(&id)
 	if err != nil {
 		return fmt.Errorf("could not update episode in db: %v", err)
 	}
