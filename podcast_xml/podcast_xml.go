@@ -103,13 +103,17 @@ func (details *CreationDetails) nested() (nestedCreationDetails, error) {
 			return nestedCreationDetails{}, fmt.Errorf("episode %d references none of given seasons", episode.Id)
 		}
 		// Find season in nested.
-		seasonIndex := sort.Search(len(nested.Seasons), func(i int) bool {
-			return nested.Seasons[i].Details.Id == details.Seasons[i].Id
-		})
+		nestedSeasonIndex := -1
+		for i, s := range nested.Seasons {
+			if s.Details.Id == details.Seasons[season].Id {
+				nestedSeasonIndex = i
+				break
+			}
+		}
 		// Add to episodes list and cache.
-		nested.Seasons[seasonIndex].Episodes = append(nested.Seasons[seasonIndex].Episodes, episode)
+		nested.Seasons[nestedSeasonIndex].Episodes = append(nested.Seasons[nestedSeasonIndex].Episodes, episode)
 		seasonCache.Id = season
-		seasonCache.Index = seasonIndex
+		seasonCache.Index = nestedSeasonIndex
 	}
 	// Sort episodes and check for duplicate episode nums within the same season.
 	for _, season := range nested.Seasons {
