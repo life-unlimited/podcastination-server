@@ -332,8 +332,12 @@ func (job *ImportJob) performImportTask(task ImportTask) (podcasts.Podcast, erro
 	// Get new file locations.
 	fileLocations := transfer.GetEpisodeFileLocations(episode, podcast.Id)
 	episode.MP3Location = fileLocations.MP3FullPath()
-	episode.ImageLocation = fileLocations.ImageFullPath()
-	episode.PDFLocation = fileLocations.PDFFullPath()
+	if task.Details.ImageFileName != "" {
+		episode.ImageLocation = fileLocations.ImageFullPath()
+	}
+	if task.Details.PDFFileName != "" {
+		episode.PDFLocation = fileLocations.PDFFullPath()
+	}
 	// Transfer the files.
 	err = job.performFileTransfer(episode, task, fileLocations)
 	if err != nil {
