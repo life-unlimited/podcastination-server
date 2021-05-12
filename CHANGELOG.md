@@ -1,3 +1,11 @@
+## [1.0.2](https://gitlab.com/life-unlimited/podcastination-server/compare/v1.0.1...v1.0.2) (2021-05-12)
+
+
+### Bug Fixes
+
+* fixed broken podcast xml generation ([b8e00d6](https://gitlab.com/life-unlimited/podcastination-server/commit/b8e00d61d8ea405ef6cf4df3e20c63a30851d605))
+* fixed broken season retrieval by key ([46bd65e](https://gitlab.com/life-unlimited/podcastination-server/commit/46bd65ee8f2273169c9a50d991486963a1ccf140))
+
 ## [1.0.1](https://gitlab.com/life-unlimited/podcastination-server/compare/v1.0.0...v1.0.1) (2021-05-11)
 
 
