@@ -1,3 +1,10 @@
+## [1.0.3](https://gitlab.com/life-unlimited/podcastination-server/compare/v1.0.2...v1.0.3) (2021-05-12)
+
+
+### Bug Fixes
+
+* fixed unwanted image and pdf path for episodes in import job ([709b3fc](https://gitlab.com/life-unlimited/podcastination-server/commit/709b3fc297e868d8535340f97680124fd6552b02))
+
 ## [1.0.2](https://gitlab.com/life-unlimited/podcastination-server/compare/v1.0.1...v1.0.2) (2021-05-12)
 
 
