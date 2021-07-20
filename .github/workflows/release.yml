@@ -72,4 +72,4 @@ jobs:
           username: gitlab
           key: ${{ secrets.SSH_PROD_D_SERVER }}
           port: 44
-          script: sudo systemctl restart podcastination-server.service
+          script: sudo chmod +x /opt/podcastination-server/bin/podcastination-server && sudo systemctl restart podcastination-server.service
