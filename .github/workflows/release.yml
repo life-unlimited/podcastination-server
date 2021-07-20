@@ -40,7 +40,6 @@ jobs:
         with:
           cache: npm
       - run: npm install @semantic-release/changelog @semantic-release/git @semantic-release/github
-      - run: npm ci
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
