@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"life-unlimited/podcastination-server/app"
-	"life-unlimited/podcastination-server/config"
+	"github.com/life-unlimited/podcastination-server/app"
+	"github.com/life-unlimited/podcastination-server/config"
 	"log"
 	"os"
 	"os/signal"
