@@ -54,17 +54,28 @@ jobs:
         with:
           name: podcastination-server
 
-      - name: Run a multi-line script
-        run: |
-          echo Going to release...
-          apt install rsync openssh
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" >> ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-          rsync -rav -e 'ssh -p 44' --progress --delete podcastination-server gitlab@lu-church.de:/opt/podcastination-server/bin
-          ssh gitlab@lu-church.de -p 44 "sudo systemctl restart podcastination-server.service"
+      - name: rsync deploy
+        uses: burnett01/rsync-deployments@4.1
+        with:
+          switches: -rav --progress --delete
+          path: podcastination-server
+          remote_path: /opt/podcastination-server-hello/bin
+          remote_host: lu-church.de
+          remote_port: 44
+          remote_user: gitlab
+          remote_key: ${{ secrets.SSH_PROD_D_SERVER }}
 
-          echo Done :)
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PROD_D_SERVER }}
+#      - name: Run a multi-line script
+#        run: |
+#          echo Going to release...
+#          apt install rsync openssh
+#          mkdir -p ~/.ssh
+#          echo "$SSH_PRIVATE_KEY" >> ~/.ssh/id_rsa
+#          chmod 600 ~/.ssh/id_rsa
+#          echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+#          rsync -rav -e 'ssh -p 44' --progress --delete podcastination-server gitlab@lu-church.de:/opt/podcastination-server/bin
+#          ssh gitlab@lu-church.de -p 44 "sudo systemctl restart podcastination-server.service"
+#
+#          echo Done :)
+#        env:
+#          SSH_PRIVATE_KEY: ${{ secrets.SSH_PROD_D_SERVER }}
