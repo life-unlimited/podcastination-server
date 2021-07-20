@@ -57,7 +57,7 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo Going to release...
-          apt add --no-cache rsync openssh
+          apt install rsync openssh
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" >> ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
