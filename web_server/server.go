@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
-	"life-unlimited/podcastination-server/stores"
+	"github.com/life-unlimited/podcastination-server/stores"
 	"log"
 	"net/http"
 	"time"
