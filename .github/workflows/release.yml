@@ -57,7 +57,7 @@ jobs:
       - name: rsync deploy
         uses: burnett01/rsync-deployments@4.1
         with:
-          switches: -rav --progress --delete --chmod=Du=rwx,Dg=rx,D=,Fu=rwx,Fg=rx,Fo= --recursive
+          switches: -rav --progress --delete --chmod=Du=rwx,Dg=rx,D=,Fu=rwx,Fg=rx,Fo=x --recursive
           path: podcastination-server
           remote_path: /opt/podcastination-server/bin
           remote_host: lu-church.de
