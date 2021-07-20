@@ -27,6 +27,7 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
         with:
+          name: podcastination-server
           # A file, directory or wildcard pattern that describes what to upload
           path: ./podcastination-server
           # The desired behavior if no files are found using the provided path.
@@ -37,6 +38,8 @@ jobs:
     steps:
       - name: Download a Build Artifact
         uses: actions/download-artifact@v2.0.10
+        with:
+          name: podcastination-server
 
       - name: Run a multi-line script
         run: |
