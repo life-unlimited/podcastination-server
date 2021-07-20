@@ -2,13 +2,15 @@ name: Go
 
 on:
   push:
-    branches: [ master, develop ]
+    branches: [ develop ]
   pull_request:
     branches: [ master, develop ]
 
 jobs:
 
   build:
+    needs:
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -23,28 +25,3 @@ jobs:
 
       - name: Test
         run: go test -v ./...
-
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2.2.4
-        with:
-          name: podcastination-server
-          # A file, directory or wildcard pattern that describes what to upload
-          path: ./podcastination-server
-          # The desired behavior if no files are found using the provided path.
-
-  deploy:
-    if: contains( github.ref, 'master' )
-    needs:
-      - build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v2.0.10
-        with:
-          name: podcastination-server
-
-      - name: Run a multi-line script
-        run: |
-          ls -a
-          echo Add other actions to build,
-          echo test, and deploy your project.
