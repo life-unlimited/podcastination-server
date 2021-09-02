@@ -1,4 +1,4 @@
-module life-unlimited/podcastination-server
+module github.com/life-unlimited/podcastination-server
 
 go 1.14
 
