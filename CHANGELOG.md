@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/life-unlimited/podcastination-server/compare/v1.0.3...v1.0.4) (2021-09-02)
+
+
+### Bug Fixes
+
+* fixed missing podcast xml details ([34aa30d](https://github.com/life-unlimited/podcastination-server/commit/34aa30dbc54d30155f1f7c583e215747b497a2b6))
+
 ## [1.0.3](https://gitlab.com/life-unlimited/podcastination-server/compare/v1.0.2...v1.0.3) (2021-05-12)
 
 
