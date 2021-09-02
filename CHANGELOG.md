@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/life-unlimited/podcastination-server/compare/v1.0.4...v1.0.5) (2021-09-02)
+
+
+### Bug Fixes
+
+* fixed missing creator owner details in podcast xml ([debd74d](https://github.com/life-unlimited/podcastination-server/commit/debd74dbc405cbd7eae5df0d24b442f6359a865e))
+
 ## [1.0.4](https://github.com/life-unlimited/podcastination-server/compare/v1.0.3...v1.0.4) (2021-09-02)
 
 
