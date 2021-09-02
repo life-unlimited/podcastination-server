@@ -157,6 +157,7 @@ func (xml *PodcastXML) setOwner(owner podcasts.Owner) {
 		ITunesName:  owner.Name,
 		ITunesEmail: owner.Email,
 	}
+	xml.Channel = c
 }
 
 // setPodcastDetails sets podcast details like title and subtitle for a PodcastXML.
