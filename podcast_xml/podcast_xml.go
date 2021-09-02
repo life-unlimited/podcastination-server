@@ -177,6 +177,7 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast) {
 	c.Image = image{
 		Url: podcast.ImageLocation,
 	}
+	xml.Channel = c
 }
 
 // setItems sets the episodes and seasons for a PodcastXML.
