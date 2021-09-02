@@ -2,7 +2,7 @@ package transfer
 
 import (
 	"fmt"
-	"life-unlimited/podcastination-server/podcasts"
+	"github.com/life-unlimited/podcastination-server/podcasts"
 	"log"
 	"path/filepath"
 	"regexp"
