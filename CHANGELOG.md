@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/life-unlimited/podcastination-server/compare/v1.0.9...v1.0.10) (2021-09-12)
+
+
+### Bug Fixes
+
+* fixed missing itunes:image tag in podcast xml ([779983a](https://github.com/life-unlimited/podcastination-server/commit/779983ab20160fc03fadb3d39b3c19b60ea68cd7))
+
 ## [1.0.9](https://github.com/life-unlimited/podcastination-server/compare/v1.0.8...v1.0.9) (2021-09-12)
 
 
