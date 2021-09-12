@@ -176,8 +176,10 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast, staticContent
 	c.ITunesSummary = podcast.Description
 	c.ITunesKeywords = strings.Join(podcast.Keywords, ",")
 	c.Description = podcast.Description
-	c.Image = image{
-		Url: fmt.Sprintf("%s/%s", staticContentURL, podcast.ImageLocation),
+	if podcast.ImageLocation != "" {
+		c.Image = image{
+			Url: fmt.Sprintf("%s/%s", staticContentURL, podcast.ImageLocation),
+		}
 	}
 	xml.Channel = c
 }
@@ -195,15 +197,19 @@ func (xml *PodcastXML) setItems(seasons []nestedSeasonDetails, staticContentURL 
 //
 // Warning: Always add episodes in the correct order!
 func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.Season, staticContentURL string) {
+	var iTunesImageVal iTunesImage
+	if episode.ImageLocation != "" {
+		iTunesImageVal = iTunesImage{
+			Href: fmt.Sprintf("%s/%s", staticContentURL, episode.ImageLocation),
+		}
+	}
 	e := item{
 		Title:          episode.Title,
 		ITunesTitle:    episode.Title,
 		ITunesAuthor:   episode.Author,
 		ITunesSubTitle: episode.Subtitle,
 		ITunesSummary:  episode.Description,
-		ITunesImage: iTunesImage{
-			Href: fmt.Sprintf("%s/%s", staticContentURL, episode.ImageLocation),
-		},
+		ITunesImage:    iTunesImageVal,
 		Enclosure: enclosure{
 			URL:    fmt.Sprintf("%s/%s", staticContentURL, episode.MP3Location),
 			Length: strconv.Itoa(episode.MP3Length),
