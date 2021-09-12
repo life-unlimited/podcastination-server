@@ -162,7 +162,7 @@ func (xml *PodcastXML) setOwner(owner podcasts.Owner) {
 }
 
 // setPodcastDetails sets podcast details like title and subtitle for a PodcastXML.
-func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast) {
+func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast, staticContentURL string) {
 	c := xml.Channel
 	c.Title = podcast.Title
 	c.Link = podcast.Link
@@ -177,16 +177,16 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast) {
 	c.ITunesKeywords = strings.Join(podcast.Keywords, ",")
 	c.Description = podcast.Description
 	c.Image = image{
-		Url: podcast.ImageLocation,
+		Url: fmt.Sprintf("%s/%s", staticContentURL, podcast.ImageLocation),
 	}
 	xml.Channel = c
 }
 
 // setItems sets the episodes and seasons for a PodcastXML.
-func (xml *PodcastXML) setItems(seasons []nestedSeasonDetails, StaticContentURL string) {
+func (xml *PodcastXML) setItems(seasons []nestedSeasonDetails, staticContentURL string) {
 	for _, season := range seasons {
 		for _, episode := range season.Episodes {
-			xml.appendEpisode(episode, season.Details, StaticContentURL)
+			xml.appendEpisode(episode, season.Details, staticContentURL)
 		}
 	}
 }
@@ -194,7 +194,7 @@ func (xml *PodcastXML) setItems(seasons []nestedSeasonDetails, StaticContentURL 
 // appendEpisode adds an episode to a PodcastXML.
 //
 // Warning: Always add episodes in the correct order!
-func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.Season, StaticContentURL string) {
+func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.Season, staticContentURL string) {
 	e := item{
 		Title:          episode.Title,
 		ITunesTitle:    episode.Title,
@@ -202,10 +202,10 @@ func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.S
 		ITunesSubTitle: episode.Subtitle,
 		ITunesSummary:  episode.Description,
 		ITunesImage: iTunesImage{
-			Href: episode.ImageLocation,
+			Href: fmt.Sprintf("%s/%s", staticContentURL, episode.ImageLocation),
 		},
 		Enclosure: enclosure{
-			URL:    fmt.Sprintf("%s/%s", StaticContentURL, episode.MP3Location),
+			URL:    fmt.Sprintf("%s/%s", staticContentURL, episode.MP3Location),
 			Length: strconv.Itoa(episode.MP3Length),
 			Type:   "audio/mpeg",
 		},
@@ -215,7 +215,7 @@ func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.S
 		ITunesEpisodeType: "full",
 		Guid: guid{
 			IsPermaLink: false,
-			Location:    fmt.Sprintf("%s/%s", StaticContentURL, episode.MP3Location),
+			Location:    fmt.Sprintf("%s/%s", staticContentURL, episode.MP3Location),
 		},
 		PubDate:        episode.Date.Format(time.RFC1123Z),
 		ITunesExplicit: "NO", // I guess that this will always be no.
@@ -231,7 +231,7 @@ func GeneratePodcastXML(details CreationDetails) (PodcastXML, error) {
 	}
 	xml := createEmptyPodcastXML()
 	xml.setOwner(nested.Owner)
-	xml.setPodcastDetails(nested.Podcast)
+	xml.setPodcastDetails(nested.Podcast, details.StaticContentURL)
 	xml.setItems(nested.Seasons, details.StaticContentURL)
 	return *xml, nil
 }
