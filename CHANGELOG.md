@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/life-unlimited/podcastination-server/compare/v1.0.7...v1.0.8) (2021-09-12)
+
+
+### Bug Fixes
+
+* fixed remaining wrong static locations in podcast xml ([de74d13](https://github.com/life-unlimited/podcastination-server/commit/de74d130d3e4f5c22747d119efa8e38aa704c46a))
+
 ## [1.0.7](https://github.com/life-unlimited/podcastination-server/compare/v1.0.6...v1.0.7) (2021-09-12)
 
 
