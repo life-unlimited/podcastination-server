@@ -180,6 +180,9 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast, staticContent
 		c.Image = image{
 			Url: fmt.Sprintf("%s/%s", staticContentURL, podcast.ImageLocation),
 		}
+		c.ITunesImage = iTunesImage{
+			Href: fmt.Sprintf("%s/%s", staticContentURL, podcast.ImageLocation),
+		}
 	}
 	xml.Channel = c
 }
