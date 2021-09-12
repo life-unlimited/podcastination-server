@@ -215,7 +215,7 @@ func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.S
 		ITunesEpisodeType: "full",
 		Guid: guid{
 			IsPermaLink: false,
-			Location:    episode.MP3Location,
+			Location:    fmt.Sprintf("%s/%s", StaticContentURL, episode.MP3Location),
 		},
 		PubDate:        episode.Date.Format(time.RFC1123Z),
 		ITunesExplicit: "NO", // I guess that this will always be no.
