@@ -11,10 +11,11 @@ import (
 
 // CreationDetails are needed in order to create a new PodcastXML.
 type CreationDetails struct {
-	Owner    podcasts.Owner
-	Podcast  podcasts.Podcast
-	Seasons  []podcasts.Season
-	Episodes []podcasts.Episode
+	StaticContentURL string
+	Owner            podcasts.Owner
+	Podcast          podcasts.Podcast
+	Seasons          []podcasts.Season
+	Episodes         []podcasts.Episode
 }
 
 // nestedCreationDetails represent a nested version of CreationDetails and are easier to use when creating a PodcastXML.
@@ -182,10 +183,10 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast) {
 }
 
 // setItems sets the episodes and seasons for a PodcastXML.
-func (xml *PodcastXML) setItems(seasons []nestedSeasonDetails) {
+func (xml *PodcastXML) setItems(seasons []nestedSeasonDetails, StaticContentURL string) {
 	for _, season := range seasons {
 		for _, episode := range season.Episodes {
-			xml.appendEpisode(episode, season.Details)
+			xml.appendEpisode(episode, season.Details, StaticContentURL)
 		}
 	}
 }
@@ -193,7 +194,7 @@ func (xml *PodcastXML) setItems(seasons []nestedSeasonDetails) {
 // appendEpisode adds an episode to a PodcastXML.
 //
 // Warning: Always add episodes in the correct order!
-func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.Season) {
+func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.Season, StaticContentURL string) {
 	e := item{
 		Title:          episode.Title,
 		ITunesTitle:    episode.Title,
@@ -204,7 +205,7 @@ func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.S
 			Href: episode.ImageLocation,
 		},
 		Enclosure: enclosure{
-			URL:    episode.MP3Location,
+			URL:    fmt.Sprintf("%s/%s", StaticContentURL, episode.MP3Location),
 			Length: strconv.Itoa(episode.MP3Length),
 			Type:   "audio/mpeg",
 		},
@@ -231,6 +232,6 @@ func GeneratePodcastXML(details CreationDetails) (PodcastXML, error) {
 	xml := createEmptyPodcastXML()
 	xml.setOwner(nested.Owner)
 	xml.setPodcastDetails(nested.Podcast)
-	xml.setItems(nested.Seasons)
+	xml.setItems(nested.Seasons, details.StaticContentURL)
 	return *xml, nil
 }
