@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/life-unlimited/podcastination-server/compare/v1.0.5...v1.0.6) (2021-09-12)
+
+
+### Bug Fixes
+
+* fixed missing static content url in podcast xml episodes ([cd50a1b](https://github.com/life-unlimited/podcastination-server/commit/cd50a1b093c9d07129fe47a16297555b157d62f9))
+
 ## [1.0.5](https://github.com/life-unlimited/podcastination-server/compare/v1.0.4...v1.0.5) (2021-09-02)
 
 
