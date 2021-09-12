@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/life-unlimited/podcastination-server/compare/v1.0.8...v1.0.9) (2021-09-12)
+
+
+### Bug Fixes
+
+* fixed set fields in podcast xml although not provided ([4ecf7ce](https://github.com/life-unlimited/podcastination-server/commit/4ecf7ce72765f761886d7719f0adc65e2aabdaa6))
+
 ## [1.0.8](https://github.com/life-unlimited/podcastination-server/compare/v1.0.7...v1.0.8) (2021-09-12)
 
 
