@@ -56,11 +56,14 @@ func (a *App) Boot() error {
 	}, a.db)
 	// Perform integrity check.
 	// TODO: Perform integrity check.
+	// Refresh all podcast.xml files.
+
 	// Let's go.
 	a.scheduler.ScheduleJob(&tasks.ImportJob{
-		PullDir:        a.config.PullDir,
-		PodcastDir:     a.config.PodcastDir,
-		ImportInterval: time.Duration(a.config.ImportInterval) * time.Minute,
+		StaticContentURL: a.config.StaticContentURL,
+		PullDir:          a.config.PullDir,
+		PodcastDir:       a.config.PodcastDir,
+		ImportInterval:   time.Duration(a.config.ImportInterval) * time.Minute,
 		Store: tasks.ImportJobStores{
 			Podcasts: a.Stores.Podcasts,
 			Owners:   a.Stores.Owners,

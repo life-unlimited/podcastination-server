@@ -9,6 +9,8 @@ import (
 
 // PodcastinationConfig holds all important config values needed in order to run the App.
 type PodcastinationConfig struct {
+	// StaticContentURL is the base url for accessing static content.
+	StaticContentURL string `json:"static_content_url"`
 	// PostgresDatasource is the datasource for the postgres database.
 	PostgresDatasource string `json:"postgres_datasource"`
 	// PullDir is the directory where tasks are placed.
