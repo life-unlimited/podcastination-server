@@ -56,19 +56,19 @@ type iTunesCategory struct {
 
 type item struct {
 	Title             string      `xml:"title"`
-	ITunesTitle       string      `xml:"itunes:title"`
-	ITunesAuthor      string      `xml:"itunes:author"`
-	ITunesSubTitle    string      `xml:"itunes:subtitle"`
-	ITunesSummary     string      `xml:"itunes:summary"`
-	ITunesImage       iTunesImage `xml:"itunes:image"`
-	Enclosure         enclosure   `xml:"enclosure"`
+	ITunesTitle       string      `xml:"itunes:title,omitempty"`
+	ITunesAuthor      string      `xml:"itunes:author,omitempty"`
+	ITunesSubTitle    string      `xml:"itunes:subtitle,omitempty"`
+	ITunesSummary     string      `xml:"itunes:summary,omitempty"`
+	ITunesImage       iTunesImage `xml:"itunes:image,omitempty"`
+	Enclosure         enclosure   `xml:"enclosure,omitempty"`
 	ITunesDuration    int         `xml:"itunes:duration"`
 	ITunesSeason      int         `xml:"itunes:season"`
 	ITunesEpisode     int         `xml:"itunes:episode"`
-	ITunesEpisodeType string      `xml:"itunes:episodeType"`
+	ITunesEpisodeType string      `xml:"itunes:episodeType,omitempty"`
 	Guid              guid        `xml:"guid"`
 	PubDate           string      `xml:"pubDate"`
-	ITunesExplicit    string      `xml:"itunes:explicit"`
+	ITunesExplicit    string      `xml:"itunes:explicit,omitempty"`
 }
 
 type enclosure struct {
