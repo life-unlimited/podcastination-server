@@ -37,7 +37,7 @@ jobs:
         with:
           name: podcastination-server.windows.amd64
           # A file, directory or wildcard pattern that describes what to upload
-          path: ./.github/workflows/podcastination-windows.linux.amd64
+          path: ./.github/workflows/podcastination-server.windows.amd64
           # The desired behavior if no files are found using the provided path.
 
   release:
