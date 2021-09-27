@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/life-unlimited/podcastination-server/compare/v1.0.10...v1.1.0) (2021-09-27)
+
+
+### Features
+
+* add auto db migrations ([9738885](https://github.com/life-unlimited/podcastination-server/commit/973888589119e9d10bc4ca7174c90fae8134dd61))
+
 ## [1.0.10](https://github.com/life-unlimited/podcastination-server/compare/v1.0.9...v1.0.10) (2021-09-12)
 
 
