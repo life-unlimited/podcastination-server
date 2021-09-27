@@ -35,9 +35,9 @@ jobs:
       - name: Upload windows build artifact
         uses: actions/upload-artifact@v2.2.4
         with:
-          name: podcastination-server.windows.amd64
+          name: podcastination-server.windows.amd64.exe
           # A file, directory or wildcard pattern that describes what to upload
-          path: ./.github/workflows/podcastination-server.windows.amd64
+          path: ./.github/workflows/podcastination-server.windows.amd64.exe
           # The desired behavior if no files are found using the provided path.
 
   release:
