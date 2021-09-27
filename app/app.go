@@ -8,6 +8,7 @@ import (
 	"github.com/life-unlimited/podcastination-server/stores"
 	"github.com/life-unlimited/podcastination-server/tasks"
 	"github.com/life-unlimited/podcastination-server/web_server"
+	"github.com/pkg/errors"
 	"log"
 	"time"
 )
@@ -30,9 +31,18 @@ func NewApp(config config.PodcastinationConfig) *App {
 // Boot boots the App.
 func (a *App) Boot() error {
 	// Connect to database.
-	db, err := connectToDB(a.config.PostgresDatasource)
+	db, err := connectDB(a.config.PostgresDatasource, defaultMaxDBConnections)
 	if err != nil {
 		panic(fmt.Errorf("could not open db connection: %v", err))
+	}
+	err = testDBConnection(db)
+	if err != nil {
+		return errors.Wrap(err, "test db connection")
+	}
+	// Perform database migrations if needed.
+	err = performDBMigrations(db)
+	if err != nil {
+		return errors.Wrap(err, "perform database migrations")
 	}
 	a.db = db
 	// Setup stores.Stores.
@@ -93,11 +103,6 @@ func (a *App) Shutdown() error {
 		return closeDB(a.db)
 	}
 	return nil
-}
-
-// connectToDB connects to the database with postgres driver.
-func connectToDB(dataSourceName string) (*sql.DB, error) {
-	return sql.Open("postgres", dataSourceName)
 }
 
 // closeDB closes the database connection.
