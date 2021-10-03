@@ -19,7 +19,6 @@ type channel struct {
 	Language         string           `xml:"language"`
 	AtomLink         atomLink         `xml:"atom:link"`
 	Copyright        string           `xml:"copyright"`
-	ITunesSubtitle   string           `xml:"itunes:subtitle"`
 	ITunesAuthor     string           `xml:"itunes:author"`
 	ITunesSummary    string           `xml:"itunes:summary"`
 	ITunesKeywords   string           `xml:"itunes:keywords"`
