@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/life-unlimited/podcastination-server/compare/v1.1.0...v1.2.0) (2021-10-03)
+
+
+### Features
+
+* add subtitle to title in podcast xml ([aa0ab9f](https://github.com/life-unlimited/podcastination-server/commit/aa0ab9f64568080ecbfecef32fe4c6dc9bc49d38))
+
 # [1.1.0](https://github.com/life-unlimited/podcastination-server/compare/v1.0.10...v1.1.0) (2021-09-27)
 
 
