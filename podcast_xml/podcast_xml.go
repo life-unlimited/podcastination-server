@@ -161,15 +161,10 @@ func (xml *PodcastXML) setOwner(owner podcasts.Owner) {
 	xml.Channel = c
 }
 
-// setPodcastDetails sets podcast details like title and subtitle for a PodcastXML. Sadly only Apple podcasts support
-// subtitles. Therefore, we append it to the title if provided.
+// setPodcastDetails sets podcast details like title and subtitle for a PodcastXML.
 func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast, staticContentURL string) {
 	c := xml.Channel
-	if podcast.Subtitle == "" {
-		c.Title = podcast.Title
-	} else {
-		c.Title = fmt.Sprintf("%s - %s", podcast.Title, podcast.Subtitle)
-	}
+	c.Title = podcast.Title
 	c.Link = podcast.Link
 	c.Language = string(podcast.Language)
 	c.AtomLink = atomLink{
@@ -177,6 +172,7 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast, staticContent
 		Rel:  "self",
 		Type: "application/rss+xml",
 	}
+	c.ITunesSubtitle = podcast.Subtitle
 	c.ITunesSummary = podcast.Description
 	c.ITunesKeywords = strings.Join(podcast.Keywords, ",")
 	c.Description = podcast.Description
@@ -210,8 +206,13 @@ func (xml *PodcastXML) appendEpisode(episode podcasts.Episode, season podcasts.S
 			Href: fmt.Sprintf("%s/%s", staticContentURL, episode.ImageLocation),
 		}
 	}
+	episodeTitle := episode.Title
+	// Append subtitle to title if existing.
+	if episode.Subtitle != "" {
+		episodeTitle = fmt.Sprintf("%s - %s", episode.Title, episode.Subtitle)
+	}
 	e := item{
-		Title:          episode.Title,
+		Title:          episodeTitle,
 		ITunesTitle:    episode.Title,
 		ITunesAuthor:   episode.Author,
 		ITunesSubTitle: episode.Subtitle,
