@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/life-unlimited/podcastination-server/compare/v1.2.0...v1.2.1) (2021-10-04)
+
+
+### Bug Fixes
+
+* fix wrong title-subtitle combination ([b2474e6](https://github.com/life-unlimited/podcastination-server/commit/b2474e6154063bd09427bfc383e4ddf9eee83e00))
+
 # [1.2.0](https://github.com/life-unlimited/podcastination-server/compare/v1.1.0...v1.2.0) (2021-10-03)
 
 
