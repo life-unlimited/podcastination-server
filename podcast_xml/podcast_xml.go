@@ -184,6 +184,10 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast, staticContent
 			Href: fmt.Sprintf("%s/%s", staticContentURL, podcast.ImageLocation),
 		}
 	}
+	c.ITunesCategory = iTunesCategory{
+		Text:          "Religion &amp; Spirituality",
+		SubCategories: []iTunesCategory{{Text: "Christianity"}},
+	}
 	xml.Channel = c
 }
 
