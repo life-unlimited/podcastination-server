@@ -185,7 +185,7 @@ func (xml *PodcastXML) setPodcastDetails(podcast podcasts.Podcast, staticContent
 		}
 	}
 	c.ITunesCategory = iTunesCategory{
-		Text:          "Religion &amp; Spirituality",
+		Text:          "Religion & Spirituality",
 		SubCategories: []iTunesCategory{{Text: "Christianity"}},
 	}
 	xml.Channel = c
