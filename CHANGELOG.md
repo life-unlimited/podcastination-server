@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/life-unlimited/podcastination-server/compare/v1.2.1...v1.2.2) (2021-11-21)
+
+
+### Bug Fixes
+
+* add missing itunes:category tag to podcast xml ([8276181](https://github.com/life-unlimited/podcastination-server/commit/82761810f7fa23a7ccc71cd06ddf33b4a9907a36))
+
 ## [1.2.1](https://github.com/life-unlimited/podcastination-server/compare/v1.2.0...v1.2.1) (2021-10-04)
 
 
