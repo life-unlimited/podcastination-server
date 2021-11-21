@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/life-unlimited/podcastination-server/compare/v1.2.2...v1.2.3) (2021-11-21)
+
+
+### Bug Fixes
+
+* fix broken itunes category ([2f7a1d0](https://github.com/life-unlimited/podcastination-server/commit/2f7a1d0fc1c9916f7c5033b5d990901974e40509))
+
 ## [1.2.2](https://github.com/life-unlimited/podcastination-server/compare/v1.2.1...v1.2.2) (2021-11-21)
 
 
