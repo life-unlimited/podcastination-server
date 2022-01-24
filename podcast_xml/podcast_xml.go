@@ -58,19 +58,12 @@ func (details *CreationDetails) nested() (nestedCreationDetails, error) {
 		// Add to nested.
 		nested.Seasons = append(nested.Seasons, nestedSeasonDetails{Details: season})
 	}
-	duplicateSeasonNums := -1
-	// Sort seasons and check for duplicate season nums.
+	// Sort seasons.
 	sort.SliceStable(nested.Seasons, func(i, j int) bool {
 		vi := nested.Seasons[i].Details.Num
 		vj := nested.Seasons[j].Details.Num
-		if vi == vj {
-			duplicateSeasonNums = vi
-		}
 		return vi < vj
 	})
-	if duplicateSeasonNums != -1 {
-		return nestedCreationDetails{}, fmt.Errorf("duplicate season number: %d", duplicateSeasonNums)
-	}
 	// Check episodes.
 	seasonCache := struct {
 		Id    int
@@ -116,21 +109,13 @@ func (details *CreationDetails) nested() (nestedCreationDetails, error) {
 		seasonCache.Id = season
 		seasonCache.Index = nestedSeasonIndex
 	}
-	// Sort episodes and check for duplicate episode nums within the same season.
+	// Sort episodes.
 	for _, season := range nested.Seasons {
-		duplicateEpisodeNums := -1
 		sort.SliceStable(season.Episodes, func(i, j int) bool {
 			vi := season.Episodes[i].Num
 			vj := season.Episodes[j].Num
-			if vi == vj {
-				duplicateEpisodeNums = vi
-			}
 			return vi < vj
 		})
-		if duplicateEpisodeNums != -1 {
-			return nestedCreationDetails{}, fmt.Errorf("duplicate episode number within season %d: %d",
-				season.Details.Id, duplicateEpisodeNums)
-		}
 	}
 	// Everything ok.
 	return nested, nil
