@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/life-unlimited/podcastination-server/compare/v1.3.1...v1.3.2) (2022-01-24)
+
+
+### Bug Fixes
+
+* remove unwanted duplicate num checks ([acbe47f](https://github.com/life-unlimited/podcastination-server/commit/acbe47f4cc4584b9690ec5bf5e88a0bb8e06df00))
+
 ## [1.3.1](https://github.com/life-unlimited/podcastination-server/compare/v1.3.0...v1.3.1) (2022-01-24)
 
 
