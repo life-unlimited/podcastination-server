@@ -129,7 +129,7 @@ func (details *CreationDetails) nested() (nestedCreationDetails, error) {
 		})
 		if duplicateEpisodeNums != -1 {
 			return nestedCreationDetails{}, fmt.Errorf("duplicate episode number within season %d: %d",
-				season.Details.Id, duplicateSeasonNums)
+				season.Details.Id, duplicateEpisodeNums)
 		}
 	}
 	// Everything ok.
