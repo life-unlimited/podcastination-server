@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/life-unlimited/podcastination-server/compare/v1.2.3...v1.3.0) (2022-01-24)
+
+
+### Features
+
+* add auto feed refresh on startup ([75c9179](https://github.com/life-unlimited/podcastination-server/commit/75c9179cd1aedbe4fae2f515e5b5506870dcd64e))
+
 ## [1.2.3](https://github.com/life-unlimited/podcastination-server/compare/v1.2.2...v1.2.3) (2021-11-21)
 
 
