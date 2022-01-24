@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/life-unlimited/podcastination-server/config"
+	"github.com/life-unlimited/podcastination-server/feedgen"
 	"github.com/life-unlimited/podcastination-server/stores"
 	"github.com/life-unlimited/podcastination-server/tasks"
 	"github.com/life-unlimited/podcastination-server/web_server"
@@ -67,7 +68,13 @@ func (a *App) Boot() error {
 	// Perform integrity check.
 	// TODO: Perform integrity check.
 	// Refresh all podcast.xml files.
-
+	log.Println("refreshing all podcast xml files")
+	err = feedgen.RefreshFeedForPodcasts(a.Stores, a.config.StaticContentURL, a.config.PodcastDir, tasks.PodcastXMLDetailsFileName)
+	if err != nil {
+		log.Printf("%+v", errors.Wrap(err, "refresh feed for podcasts"))
+	} else {
+		log.Println("done.")
+	}
 	// Let's go.
 	a.scheduler.ScheduleJob(&tasks.ImportJob{
 		StaticContentURL: a.config.StaticContentURL,

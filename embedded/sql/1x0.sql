@@ -95,13 +95,11 @@ create unique index episodes_num_season_id_uindex
 
 create table podcastination
 (
-    key   varchar default nextval('podcastination_key_seq'::regclass) not null
+    key   varchar not null
         constraint podcastination_pk
             primary key,
     value varchar
 );
-
-alter sequence podcastination_key_seq owned by podcastination.key;
 
 create unique index podcastination_key_uindex
     on podcastination (key);
