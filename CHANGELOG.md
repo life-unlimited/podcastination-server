@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/life-unlimited/podcastination-server/compare/v1.3.0...v1.3.1) (2022-01-24)
+
+
+### Bug Fixes
+
+* fix broken log for podcast xml generation ([a11517d](https://github.com/life-unlimited/podcastination-server/commit/a11517dfaf5f03c9383bf5d7a8d5ccc5e43806a8))
+
 # [1.3.0](https://github.com/life-unlimited/podcastination-server/compare/v1.2.3...v1.3.0) (2022-01-24)
 
 
